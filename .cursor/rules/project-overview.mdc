@@ -1,0 +1,40 @@
+# Idea Playground Project
+
+## Project Goal
+This is an **idea playground** - a UI that allows the user to explore, develop, and organize their ideas in a structured way. The core concept is to provide a ticket-based interface where ideas can be viewed, edited, filtered, and organized.
+
+## Development Philosophy
+- **Work Incrementaly**: Work in small chuncks, commiting each time there is a working tested state
+- **Test-driven**: Start with failing e2e tests before implementing features
+- **Component thinking**: Always consider loaders, warnings, error states
+- **Data abstraction**: Keep data layer separate in a simple backend
+- **User experience**: Focus on smooth interactions and intuitive UI
+
+## Important Notes
+- Run the tests in a way that will finish in a command line so Cursor chat doesn't get stuck - npx playwright test --reporter=list
+- Use PlayWright MCP to manually test every change you make
+- Stick to the PRODUCT_SPEC.md and keep it up to date with changes
+- Where possible, use existing popular libraries
+
+## Key Features
+- **Multiple view modes**: Kanban board (organized by readiness) and detailed list view with reordering
+- **Rich editing**: Modal editor with markdown support and metadata editing, plus full-screen mode
+- **Dimensions system**: Structured tagging system with field, readiness, complexity, and connections
+- **Filtering**: AND-based filtering by dimensions with clean tag-style interface
+- **Drag & drop**: Visual arrangement and reordering of ideas
+- **Data abstraction**: JSON-based storage with layer ready for backend migration
+
+## Tech Stack
+- **Frontend**: React + TypeScript + Tailwind CSS
+- **Markdown editing**: @uiw/react-md-editor
+- **Drag & drop**: @dnd-kit
+- **Testing**: Playwright for e2e tests
+- **Data**: JSON files (ideas.json, dimensions.json)
+
+
+## File Structure
+- `/src/components/` - React components
+- `/src/services/` - Data access layer (abstracts JSON operations)
+- `/src/types/` - TypeScript interfaces
+- `/data/` - JSON data files
+- `/tests/` - Playwright e2e tests

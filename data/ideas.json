@@ -1,0 +1,186 @@
+{
+  "ideas": {
+    "human_ai_content_authentication": {
+      "title": "Human-AI Content Authentication & Network Effects",
+      "content": "# Human-AI Content Authentication & Network Effects\n\n## Core Paper: \"Statistical Human Verification Networks\"\n\n### The Solution\n**One person, one account through statistical sampling**: Just as small random samples can represent large populations, a few random human verifications make maintaining fake accounts impractical. After 5-10 verifications from existing users, the cost of faking exceeds the benefit.\n\n**Trust through endorsement chains**: Content gains trust not from authorship but from human endorsements. Each endorsement builds a public trust tree. Users who consistently endorse quality content gain reputation; those who endorse garbage lose it.\n\n### The Problem  \n**Individual KYC is hard**: Traditional know-your-customer verification is expensive, invasive, and easily gamed at scale.\n\n**We can't distinguish human from AI content**: The crisis isn't just detecting AI writing - it's preserving spaces for authentic human thought and preventing AI training contamination.\n\n### How It Works\n**Entry (limited openings)**: New users pass a human test (distinctive mouse movements, response patterns) during limited time windows. They must sync with existing users' endorsements to stay.\n\n**Two-layer verification**: \n- **Signup verification**: Statistical sampling ensures one person = one account\n- **Content verification**: Ongoing endorsements identify authentic human content\n\n**Network-based entry**: To join, you need endorsements from users already in your social network. If enough of your Twitter/Facebook friends are members, you can apply for entry.\n\n### Implementation Ideas\n- **Sefaria Sheets**: Torah study platform for human interpretation\n- **Blog aggregator**: Links to human-verified blog posts\n- **Discussion forums**: Human-only conversation spaces\n\n## Additional Considerations\n\n### Attack Vectors\n- **Sybil attacks**: Mitigated by entry cost + time gates + reputation building time\n- **Purchased endorsements**: Expensive long-term due to reputation loss\n- **Uniformity pressure**: System may encourage populist content over diverse thought\n\n### Technical Requirements\n- Endorsement interface design\n- Reputation calculation algorithms\n- Statistical confidence thresholds\n- Platform integration APIs\n\n## Details to Develop\n\n### Statistical Methods\n- Exact sampling requirements for KYC confidence\n- Bot content detection algorithms\n- Network analysis for fake account clusters\n\n### Network Entry Mechanics  \n- How to sample from someone's existing social network\n- Minimum network overlap requirements\n- Cold start problem for early adopters\n\n### Open Problems\n- Balancing diversity vs. consensus in endorsements\n- Preventing echo chambers\n- Scaling beyond early adopters\n- Economic incentives for participation",
+      "dimensions": {
+        "field": "Network Security",
+        "readiness": 6,
+        "complexity": 8,
+        "potentially_connected_idea": {
+          "idea": "multi_dimensional_ui_system",
+          "relation_strength": 0.8
+        }
+      },
+      "sub_ideas": [],
+      "order": 1
+    },
+    "generic_model_library": {
+      "title": "Generic Model Library",
+      "content": "# Generic Model Library\n\n## Core Concept\nLibrary that implements a generic model with:\n1. Input API - pull\n2. Output API - push  \n3. Scoring function",
+      "dimensions": {
+        "field": "Software Architecture",
+        "readiness": 6,
+        "complexity": 5,
+        "potentially_connected_idea": {
+          "idea": "human_ai_content_authentication",
+          "relation_strength": 0.4
+        }
+      },
+      "sub_ideas": [],
+      "order": 2
+    },
+    "multi_dimensional_ui_system": {
+      "title": "Updated Test Title",
+      "content": "# Multi-Dimensional UI System (Idea UI)\n\n## Core Concept\nA UI system to hold and display ideas in a structure like this document.\nEach edge has a dimension array with a short whitelist of keys.\nThen N UIs, each with a different display based on different dimension function.",
+      "dimensions": {
+        "field": "UI/UX Engineering",
+        "readiness": 1,
+        "complexity": 7,
+        "potentially_connected_idea": {
+          "idea": "human_ai_content_authentication",
+          "relation_strength": 0.8
+        }
+      },
+      "sub_ideas": [],
+      "order": 0
+    },
+    "ui_spec_testing": {
+      "title": "UI Spec Testing",
+      "content": "# UI Spec Testing\n\n## Core Concept\nTest if current models are good enough to create a UI spec in multiple iterations.\nFor questions like that we can build a system to check when there is a new model.",
+      "dimensions": {
+        "field": "QA/Testing",
+        "readiness": 5,
+        "complexity": 4,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 4
+    },
+    "educational_app_spaced_learning": {
+      "title": "Educational App with Spaced Learning (ושיננתם)",
+      "content": "# Educational App with Spaced Learning (ושיננתם)\n\n## Core Concept\nEducational app for learning texts by heart (ושיננתם - \"and you shall teach them diligently\").\nThe chunk size of text the app teaches is variable and adjusts to adapt to the student.\nUses spaced repetition principles.",
+      "dimensions": {
+        "field": "EdTech",
+        "readiness": 4,
+        "complexity": 5,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 5
+    },
+    "mcp_server_sefaria": {
+      "title": "MCP Server with Sefaria APIs",
+      "content": "# MCP Server with Sefaria APIs\n\n## Core Concept\nMCP server. So far, Sefaria APIs are free. But this will likely not work with AI DDOSing it.",
+      "dimensions": {
+        "field": "AI Infrastructure",
+        "readiness": 3,
+        "complexity": 7,
+        "potentially_connected_idea": {
+          "idea": "human_ai_content_authentication",
+          "relation_strength": 0.7
+        }
+      },
+      "sub_ideas": [],
+      "order": 8
+    },
+    "human_ai_distinction": {
+      "title": "Finding the deffinition of \"יראה\" that Humans would have and AI wouldn't",
+      "content": "# Finding the deffinition of \"יראה\" that Humans would have and AI wouldn't. You can build a website that outputs an answer for this offten, so much so that it enters the courpus and AI is trained to look for this",
+      "dimensions": {
+        "field": "Philosophy",
+        "readiness": 2,
+        "complexity": 10,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 9
+    },
+    "legal_challenge_big_tech": {
+      "title": "Legal Challenge to Big Tech Terms of Service",
+      "content": "# Legal Challenge to Big Tech Terms of Service\n\n## Core Concept\nUsing WhatsApp as an example. Consent is not really consent in their Terms of Service. \nAssuming לא תפרוש מהציבור (do not separate from the community). \nIn IL I just can't not have it with that assumption. \nThis idea's goal is a legal case for some court to enforce big tech more.\n\n## Key Arguments\n- Social necessity doctrine\n- Illusory consent when alternative is social isolation\n- Market failure with network effects",
+      "dimensions": {
+        "field": "Legal/Policy",
+        "readiness": 4,
+        "complexity": 7,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 10
+    },
+    "playwright_repository_split": {
+      "title": "Playwright Repository Split",
+      "content": "# Playwright Repository Split\n\n## Core Concept\nSplit the playwright roll into a new repo.",
+      "dimensions": {
+        "field": "DevOps",
+        "readiness": 8,
+        "complexity": 2,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 6
+    },
+    "poms_multiple_sizes": {
+      "title": "POMs (Page Object Models) for Multiple Sizes",
+      "content": "# POMs (Page Object Models) for Multiple Sizes\n\n## Core Concept\nPOMs for as many sizes as possible.\nAccessible through MCP.",
+      "dimensions": {
+        "field": "QA/Testing",
+        "readiness": 5,
+        "complexity": 4,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 7
+    },
+    "capitalism_analogies": {
+      "title": "Capitalism Analogies Collection",
+      "content": "# Capitalism Analogies Collection\n\n## Core Concepts\n**Ice cream melting**: A friend with ice cream too big for him, digging to get his favorite flavor at the bottom. The melting ice cream dripped on public property.\n\n**Coca-Cola as proof against efficient markets**: The existence and success of Coca-Cola proves there is no efficient market.\n\n## Note\nThis is just a store for analogies around capitalism at the moment.",
+      "dimensions": {
+        "field": "Philosophy",
+        "readiness": 1,
+        "complexity": 3,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 11
+    },
+    "k_means_whitelist_network": {
+      "title": "K-means Whitelist Network",
+      "content": "# K-means Whitelist Network\n\n## Core Concept\n\"It is a triggered question. Oh, maybe a network effect. What the fuck is a cool idea? To maybe do like a. I think it's called k-means\"\n\"Whitelist app. We could each time. Use the technology. Widely better wildly better. You can do this say for an hour.\"\n\n## Critical Point\nThis seems related to the authentication system but the transcript is fragmented. Is this the same idea or separate?",
+      "dimensions": {
+        "field": "Network Security",
+        "readiness": 3,
+        "complexity": 6,
+        "potentially_connected_idea": {
+          "idea": "human_ai_content_authentication",
+          "relation_strength": 0.9
+        }
+      },
+      "sub_ideas": [],
+      "order": 12
+    },
+    "idea-1": {
+      "title": "Updated Test Title",
+      "content": "# Test Content 1\n\nThis is test content for idea 1..",
+      "dimensions": {
+        "field": "AI Infrastructure",
+        "readiness": 5,
+        "complexity": 5,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 0
+    }
+  },
+  "metadata": {
+    "source_documents": [
+      "Hierarchical Organization of Ideas.md",
+      "Dimensions Registry.md",
+      "250701 Recording Transcript from Pixel 9a. After eve with Uri.",
+      "250701 OCR of Diary"
+    ],
+    "extraction_date": "2025-07-02",
+    "total_ideas": 12,
+    "hierarchy_preserved": true
+  }
+}

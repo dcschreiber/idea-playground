@@ -1,0 +1,124 @@
+# TypeScript & React Guidelines
+
+## Code Standards
+- Always use TypeScript strict mode
+- Use semicolons consistently
+- Prefer interfaces over types for object definitions
+- Use proper typing for all props, state, and function parameters
+
+## React Patterns
+- Use functional components with hooks
+- Implement proper error boundaries
+- Always include loading states for async operations
+- Use proper key props for lists
+- Implement accessibility attributes (aria-labels, roles)
+
+## Component Structure
+```typescript
+interface ComponentProps {
+  // Props interface
+}
+
+export const ComponentName: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
+  // Hooks at the top
+  // Event handlers
+  // Render logic
+  
+  return (
+    // JSX with proper accessibility
+  );
+};
+```
+
+## State Management
+- Use useState for local state
+- Use useEffect with proper dependencies
+- Implement custom hooks for reusable logic
+- Keep state as close to where it's used as possible
+
+## Performance
+- Use React.memo for expensive components
+- Use useMemo and useCallback when appropriate
+- Implement virtual scrolling for large lists
+- Optimize re-renders by proper state structure
+
+# Idea Playground - React TypeScript Application
+
+## Project Overview
+This is an idea playground application - a kanban-style interface for managing and exploring ideas with markdown editing capabilities.
+
+## Tech Stack
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS 
+- **Markdown Editor**: @uiw/react-md-editor (to be replaced with more aesthetic editor)
+- **Drag & Drop**: @dnd-kit
+- **UI Components**: @headlessui/react
+- **Testing**: Playwright (e2e)
+
+## Key Features
+- **Kanban Board**: Single view organized by readiness levels (1-2, 3-4, 5-6, 7-8, 9-10)
+- **Modal Editor**: Full markdown editing with preview, fullscreen capability
+- **Dimensions System**: Field, readiness, complexity, connected ideas
+- **Filtering**: By topics/fields using tag-style interface
+- **Drag & Drop**: Reordering cards between kanban columns
+- **Persistent Storage**: Simple backend with JSON files as database
+
+## File Structure
+- `src/types/index.ts` - TypeScript interfaces for Idea, Dimensions, etc.
+- `src/services/dataService.ts` - Data abstraction layer for JSON operations
+- `src/components/` - React components (KanbanView, IdeaModal, IdeaCard, etc.)
+- `data/` - JSON files for ideas and dimensions
+- `tests/` - Playwright e2e tests
+
+## Development Guidelines
+
+### Testing Protocol
+**CRITICAL**: When running tests, use the `--headed` flag to avoid getting stuck:
+```bash
+# Correct way - opens browser but doesn't block terminal
+npx playwright test --headed
+
+# Avoid this - creates localhost server that blocks terminal
+npx playwright test
+```
+
+### Work in Small Chunks
+- Make small, focused changes
+- Test each change with Playwright manually if needed
+- Commit frequently with descriptive messages
+- Use the MCP GitHub tools for commits when possible
+
+### Code Standards
+- Always use TypeScript with strict types
+- Use functional components with hooks
+- Follow React best practices
+- Use Tailwind classes for styling
+- Always include proper data-testid attributes for testing
+
+### Data Management
+- Keep JSON files in repo as "database"
+- Use dataService.ts abstraction layer
+- Maintain data persistence through simple backend
+- Ensure all edits are saved to JSON files immediately
+
+## Architecture Notes
+- **Single View**: Kanban only (no list view)
+- **Modal-First Editing**: Primary interface for editing ideas
+- **Drag & Drop**: Cards can be moved between readiness columns
+- **Real-time Filtering**: Filter by field/topic without page reload
+- **Markdown Preview**: Editable preview mode in modal editor
+
+## Testing Strategy
+
+### Running Tests Properly
+- **CRITICAL**: Never use `--headed` flag when running tests in Cursor chat as it serves HTML reports that keep terminal open
+- **Correct command**: `npx playwright test --reporter=list` 
+- **Alternative**: `npx playwright test` (uses default reporter)
+- **Never use**: `npx playwright test --headed` or `npm test` if it includes --headed
+- **Background option**: Use `--reporter=list` for clean terminal output that completes properly
+
+### Test Structure
+- **Data Independent**: Tests use mock data fixtures, never rely on production data
+- **Mocked APIs**: All backend calls intercepted with consistent test data  
+- **Core Coverage**: Kanban display, modal editing, filtering, drag-and-drop, preview/edit toggle
+- **8 Tests Total**: All focused on critical user flows
