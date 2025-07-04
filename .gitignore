@@ -1,5 +1,23 @@
 # Dependencies
 node_modules/
+
+# Test outputs
 test-results/
 playwright-report/
 playwright-profile/
+
+# Build outputs
+dist/
+functions/lib/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vite build cache
+.vite/
+
+# Debug files
+debug-*.png
+
+# Firebase cache
+.firebase/
