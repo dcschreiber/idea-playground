@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:emulators\" \"npm run dev:client\"",
+    "dev:simple": "concurrently \"npm run dev:emulators:no-firestore\" \"npm run dev:client\"",
     "dev:client": "vite",
     "dev:server": "tsx watch server/index.ts",
     "dev:emulators": "firebase emulators:start --only functions,firestore,hosting",
+    "dev:emulators:no-firestore": "firebase emulators:start --only functions,hosting",
     "build": "tsc -b && vite build",
     "build:functions": "cd functions && npm run build",
     "lint": "eslint .",
