@@ -599,40 +599,220 @@ test.describe('Idea Playground', () => {
 
   test('should filter ideas by title substring', async ({ page }) => {
     await page.goto('/');
+    
+    // Wait for data to load
     await page.waitForSelector('[data-testid="idea-card"]');
     await page.waitForTimeout(1000);
+    
+    // Count total cards initially
+    const initialCardCount = await page.locator('[data-testid="idea-card"]').count();
+    expect(initialCardCount).toBeGreaterThan(0);
+    
+    // Search for "Test" (should match "Updated Test Title")
+    await page.locator('[data-testid="search-title-input"]').fill('Test');
+    await page.waitForTimeout(500);
+    
+    // Should show fewer cards
+    const filteredCardCount = await page.locator('[data-testid="idea-card"]').count();
+    expect(filteredCardCount).toBeLessThan(initialCardCount);
+    expect(filteredCardCount).toBeGreaterThan(0);
+    
+    // Should show cards with "Test" in title
+    const cardTitles = await page.locator('[data-testid="idea-card"] h3').allTextContents();
+    cardTitles.forEach(title => {
+      expect(title.toLowerCase()).toContain('test');
+    });
+  });
 
-    // There should be 5 ideas initially
-    await expect(page.locator('[data-testid="idea-card"]')).toHaveCount(5);
+  test.describe('Search Clearing Functionality', () => {
+    test('should restore all ideas when search is cleared', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Count total cards initially
+      const initialCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(initialCardCount).toBeGreaterThan(0);
+      
+      // Apply search filter
+      await page.locator('[data-testid="search-title-input"]').fill('Test');
+      await page.waitForTimeout(500);
+      
+      // Verify filter is applied (fewer cards)
+      const filteredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(filteredCardCount).toBeLessThan(initialCardCount);
+      
+      // Clear the search by setting input to empty
+      await page.locator('[data-testid="search-title-input"]').fill('');
+      await page.waitForTimeout(500);
+      
+      // Should restore all cards
+      const restoredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(restoredCardCount).toBe(initialCardCount);
+    });
 
-    // Type a substring that matches only one idea
-    await page.locator('[data-testid="search-title-input"]').fill('spaced');
-    await page.waitForTimeout(300); // debounce
-    await expect(page.locator('[data-testid="idea-card"]')).toHaveCount(1);
-    await expect(page.locator('[data-testid="idea-card"]')).toContainText('Educational App with Spaced Learning');
+    test('should clear search using clear() method', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Count total cards initially
+      const initialCardCount = await page.locator('[data-testid="idea-card"]').count();
+      
+      // Apply search filter
+      await page.locator('[data-testid="search-title-input"]').fill('Test');
+      await page.waitForTimeout(500);
+      
+      // Verify filter is applied
+      const filteredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(filteredCardCount).toBeLessThan(initialCardCount);
+      
+      // Clear the search input using clear() method
+      await page.locator('[data-testid="search-title-input"]').clear();
+      await page.waitForTimeout(500);
+      
+      // Should restore all cards
+      const restoredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(restoredCardCount).toBe(initialCardCount);
+    });
 
-    // Type a substring that matches multiple ideas
-    await page.locator('[data-testid="search-title-input"]').fill('idea');
-    await page.waitForTimeout(300);
-    // Should match all ideas with 'idea' in the title (case-insensitive)
-    const matchingTitles = [
-      'Multi-Dimensional UI System',
-      'Educational App with Spaced Learning',
-      'Human-AI Content Authentication & Network Effects',
-      'Generic Model Library',
-      'Playwright Repository Split',
-      'UI Spec Testing',
-      'Legal Challenge to Big Tech Terms of Service',
-      'Finding the deffinition of "יראה" that Humans would have and AI wouldn\'t',
-      'Capitalism Analogies Collection',
-      'AI Talmud',
-    ];
-    // But our mock data has 5 visible, so just check count > 1
-    await expect(page.locator('[data-testid="idea-card"]')).not.toHaveCount(1);
+    test('should handle search clearing with whitespace', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Count total cards initially
+      const initialCardCount = await page.locator('[data-testid="idea-card"]').count();
+      
+      // Apply search filter
+      await page.locator('[data-testid="search-title-input"]').fill('Test');
+      await page.waitForTimeout(500);
+      
+      // Verify filter is applied
+      const filteredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(filteredCardCount).toBeLessThan(initialCardCount);
+      
+      // Clear search by setting to whitespace only (should be treated as empty)
+      await page.locator('[data-testid="search-title-input"]').fill('   ');
+      await page.waitForTimeout(500);
+      
+      // Should restore all cards (whitespace is treated as empty)
+      const restoredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(restoredCardCount).toBe(initialCardCount);
+    });
 
-    // Clear the search
-    await page.locator('[data-testid="search-title-input"]').fill('');
-    await page.waitForTimeout(300);
-    await expect(page.locator('[data-testid="idea-card"]')).toHaveCount(5);
+    test('should maintain other filters when search is cleared', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Apply field filter first
+      await page.locator('[data-testid="filter-field"]').click();
+      await page.locator('[data-testid="filter-option-AI Infrastructure"]').click();
+      await page.waitForTimeout(500);
+      
+      // Count cards with field filter
+      const fieldFilteredCount = await page.locator('[data-testid="idea-card"]').count();
+      
+      // Add search filter on top
+      await page.locator('[data-testid="search-title-input"]').fill('Test');
+      await page.waitForTimeout(500);
+      
+      // Should show even fewer cards (both filters applied)
+      const bothFiltersCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(bothFiltersCount).toBeLessThanOrEqual(fieldFilteredCount);
+      
+      // Clear only the search filter
+      await page.locator('[data-testid="search-title-input"]').fill('');
+      await page.waitForTimeout(500);
+      
+      // Should restore to field filter count (field filter still active)
+      const searchClearedCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(searchClearedCount).toBe(fieldFilteredCount);
+      
+      // Verify field filter is still active (not all cards are shown)
+      const totalCardsCount = await page.goto('/').then(() => 
+        page.waitForSelector('[data-testid="idea-card"]').then(() => 
+          page.locator('[data-testid="idea-card"]').count()
+        )
+      );
+      expect(searchClearedCount).toBeLessThanOrEqual(totalCardsCount);
+    });
+
+    test('should work with case-insensitive search clearing', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Count total cards initially
+      const initialCardCount = await page.locator('[data-testid="idea-card"]').count();
+      
+      // Apply case-insensitive search
+      await page.locator('[data-testid="search-title-input"]').fill('TEST');
+      await page.waitForTimeout(500);
+      
+      // Verify filter is applied
+      const filteredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(filteredCardCount).toBeLessThan(initialCardCount);
+      
+      // Verify it found the right cards (case-insensitive)
+      const cardTitles = await page.locator('[data-testid="idea-card"] h3').allTextContents();
+      cardTitles.forEach(title => {
+        expect(title.toLowerCase()).toContain('test');
+      });
+      
+      // Clear the search
+      await page.locator('[data-testid="search-title-input"]').fill('');
+      await page.waitForTimeout(500);
+      
+      // Should restore all cards
+      const restoredCardCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(restoredCardCount).toBe(initialCardCount);
+    });
+
+    test('should handle multiple search and clear cycles', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Count total cards initially
+      const initialCardCount = await page.locator('[data-testid="idea-card"]').count();
+      
+      // First search cycle
+      await page.locator('[data-testid="search-title-input"]').fill('Test');
+      await page.waitForTimeout(500);
+      const firstFilterCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(firstFilterCount).toBeLessThan(initialCardCount);
+      
+      // Clear first search
+      await page.locator('[data-testid="search-title-input"]').fill('');
+      await page.waitForTimeout(500);
+      const firstClearCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(firstClearCount).toBe(initialCardCount);
+      
+      // Second search cycle with different term
+      await page.locator('[data-testid="search-title-input"]').fill('UI');
+      await page.waitForTimeout(500);
+      const secondFilterCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(secondFilterCount).toBeLessThan(initialCardCount);
+      
+      // Clear second search
+      await page.locator('[data-testid="search-title-input"]').fill('');
+      await page.waitForTimeout(500);
+      const secondClearCount = await page.locator('[data-testid="idea-card"]').count();
+      expect(secondClearCount).toBe(initialCardCount);
+    });
   });
 }); 

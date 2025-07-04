@@ -73,10 +73,10 @@ This is an idea playground application - a kanban-style interface for managing a
 ## Development Guidelines
 
 ### Testing Protocol
-**CRITICAL**: When running tests, use the `--headed` flag to avoid getting stuck:
+**CRITICAL**: When running tests, use the `--reporter=list` flag to avoid getting stuck:
 ```bash
 # Correct way - opens browser but doesn't block terminal
-npx playwright test --headed
+npx playwright test --reporter=list
 
 # Avoid this - creates localhost server that blocks terminal
 npx playwright test
