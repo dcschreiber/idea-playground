@@ -24,6 +24,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Bars3Icon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
 
 interface KanbanViewProps {
   ideas: Record<string, Idea>;
@@ -46,6 +47,7 @@ interface KanbanColumnProps {
   onIdeaClick: (id: string) => void;
   testId: string;
   columnKey: string;
+  isDropTarget?: boolean;
 }
 
 interface ReadinessColumn {
@@ -70,33 +72,57 @@ const SortableIdeaCard: React.FC<SortableIdeaCardProps> = ({ id, idea, onIdeaCli
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: transition || 'transform 150ms ease',
     opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group">
+    <div 
+      ref={setNodeRef} 
+      style={style}
+      className={clsx(
+        "cursor-grab active:cursor-grabbing transition-all duration-150",
+        isDragging && "rotate-2 scale-105 shadow-xl"
+      )}
+      {...attributes}
+      {...listeners}
+    >
       <IdeaCard
         id={id}
         idea={idea}
         onClick={onIdeaClick}
         isDragging={isDragging}
+        className={clsx(
+          "border-2 transition-colors duration-200",
+          isDragging ? "border-blue-400 shadow-lg" : "border-transparent hover:border-gray-300"
+        )}
       />
-      <div 
-        {...attributes} 
-        {...listeners}
-        className="absolute top-2 right-2 p-1 bg-gray-100 hover:bg-gray-200 rounded cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
-        title="Drag to reorder"
-      >
-        <Bars3Icon className="h-4 w-4 text-gray-600" />
-      </div>
     </div>
   );
 };
 
-const KanbanColumn: React.FC<KanbanColumnProps> = ({ title, range, description, ideas, onIdeaClick, testId }) => {
+const KanbanColumn: React.FC<KanbanColumnProps> = ({ 
+  title, 
+  range, 
+  description, 
+  ideas, 
+  onIdeaClick, 
+  testId, 
+  columnKey, 
+  isDropTarget = false 
+}) => {
   return (
-    <div className="bg-gray-50 rounded-lg p-4 min-h-96" data-testid={testId}>
+    <div 
+      className={clsx(
+        "rounded-lg p-4 min-h-96 transition-all duration-200 border-2",
+        isDropTarget 
+          ? "bg-blue-50 border-blue-300 border-dashed" 
+          : "bg-gray-50 border-transparent"
+      )} 
+      data-testid={testId}
+      data-column={columnKey}
+    >
       <div className="mb-4">
         <h3 className="font-semibold text-gray-900">{title}</h3>
         <p className="text-sm text-gray-500">{range}</p>
@@ -107,7 +133,15 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ title, range, description, 
       </div>
       
       <SortableContext items={ideas.map(([id]) => id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-3">
+        <div className={clsx(
+          "space-y-3 min-h-40 rounded-lg transition-all duration-200",
+          isDropTarget && "bg-blue-100/50 border-dashed border-2 border-blue-300 p-2"
+        )}>
+          {ideas.length === 0 && isDropTarget && (
+            <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
+              Drop ideas here
+            </div>
+          )}
           {ideas.map(([id, idea]) => (
             <SortableIdeaCard
               key={id}
@@ -126,6 +160,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
   const [activeId, setActiveId] = useState<string | null>(null);
   const [columns, setColumns] = useState<ReadinessColumn[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -211,14 +246,46 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+    setDragOverColumn(null);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    // This will be used for cross-column dragging
+    const { active, over } = event;
+    
+    if (!over) {
+      setDragOverColumn(null);
+      return;
+    }
+
+    // Determine which column we're over
+    let overColumn: string | null = null;
+    
+    // Check if we're over another idea card
+    if (over.id !== active.id) {
+      for (const [columnKey, items] of Object.entries(groupedIdeas)) {
+        if (items.find(([id]) => id === over.id)) {
+          overColumn = columnKey;
+          break;
+        }
+      }
+    }
+    
+    // If not over a card, check if we're over a column directly
+    if (!overColumn) {
+      const overElement = document.elementFromPoint(event.delta.x, event.delta.y);
+      const columnElement = overElement?.closest('[data-column]');
+      if (columnElement) {
+        overColumn = columnElement.getAttribute('data-column');
+      }
+    }
+
+    setDragOverColumn(overColumn);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    setDragOverColumn(null);
 
     if (!over) {
       setActiveId(null);
@@ -261,16 +328,28 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
             if (activeIdea) {
               // Update the idea's readiness to match the target column
               const newReadiness = targetColumn.minReadiness;
-              const updatedIdea = {
-                ...activeIdea,
+              onIdeaUpdate(active.id as string, {
                 dimensions: {
                   ...activeIdea.dimensions,
                   readiness: newReadiness,
                 },
-              };
-              
-              onIdeaUpdate(active.id as string, updatedIdea);
+              });
             }
+          }
+        }
+      } else if (dragOverColumn) {
+        // Dropping directly on a column (not over an existing card)
+        const targetColumn = columns.find(col => col.key === dragOverColumn);
+        if (targetColumn) {
+          const activeIdea = ideas[active.id as string];
+          if (activeIdea) {
+            const newReadiness = targetColumn.minReadiness;
+            onIdeaUpdate(active.id as string, {
+              dimensions: {
+                ...activeIdea.dimensions,
+                readiness: newReadiness,
+              },
+            });
           }
         }
       }
@@ -323,6 +402,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
                 onIdeaClick={onIdeaClick}
                 testId={column.testId}
                 columnKey={column.key}
+                isDropTarget={dragOverColumn === column.key}
               />
             </div>
           ))}
@@ -331,12 +411,15 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
       
       <DragOverlay>
         {activeIdea ? (
-          <IdeaCard
-            id={activeId!}
-            idea={activeIdea}
-            onClick={() => {}}
-            isDragging
-          />
+          <div className="rotate-2 scale-105 shadow-2xl">
+            <IdeaCard
+              id={activeId!}
+              idea={activeIdea}
+              onClick={() => {}}
+              isDragging
+              className="border-2 border-blue-400 shadow-xl"
+            />
+          </div>
         ) : null}
       </DragOverlay>
     </DndContext>

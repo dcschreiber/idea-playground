@@ -1,102 +1,122 @@
 import { Idea } from '../../src/types';
 
 export const mockIdeas: Record<string, Idea> = {
-  'idea-1': {
-    title: 'Test Idea 1',
-    content: '# Test Content 1\n\nThis is test content for idea 1.',
+  'human_ai_content_authentication': {
+    title: 'Human-AI Content Authentication & Network Effects',
+    content: '# Human-AI Content Authentication & Network Effects\n\n## Core Paper: "Statistical Human Verification Networks"\n\n### The Solution\n**One person, one account through statistical sampling**: Just as small random samples can represent large populations, a few random human verifications make maintaining fake accounts impractical.',
     dimensions: {
-      field: 'AI Infrastructure',
-      readiness: 2,
-      complexity: 5,
-      potentially_connected_idea: null,
+      field: 'Network Security',
+      readiness: 6,
+      complexity: 8,
+      potentially_connected_idea: {
+        idea: 'multi_dimensional_ui_system',
+        relation_strength: 0.8
+      },
     },
     sub_ideas: [],
     order: 1,
   },
-  'idea-2': {
-    title: 'Test Idea 2', 
-    content: '# Test Content 2\n\nThis is test content for idea 2.',
+  'generic_model_library': {
+    title: 'Generic Model Library',
+    content: '# Generic Model Library\n\n## Core Concept\nLibrary that implements a generic model with:\n1. Input API - pull\n2. Output API - push\n3. Scoring function',
     dimensions: {
-      field: 'Network Security',
-      readiness: 4,
-      complexity: 7,
-      potentially_connected_idea: null,
+      field: 'Software Architecture',
+      readiness: 6,
+      complexity: 5,
+      potentially_connected_idea: {
+        idea: 'human_ai_content_authentication',
+        relation_strength: 0.4
+      },
     },
     sub_ideas: [],
     order: 2,
   },
-  'idea-3': {
-    title: 'Test Idea 3',
-    content: '# Test Content 3\n\nThis is test content for idea 3.',
+  'multi_dimensional_ui_system': {
+    title: 'Updated Test Title',
+    content: '# Multi-Dimensional UI System (Idea UI)\n\n## Core Concept\nA UI system to hold and display ideas in a structure like this document.\nEach edge has a dimension array with a short whitelist of keys.\nThen N UIs, each with a different display based on different dimension function.',
     dimensions: {
-      field: 'Network Security',
-      readiness: 6,
-      complexity: 3,
-      potentially_connected_idea: null,
+      field: 'UI/UX Engineering',
+      readiness: 1,
+      complexity: 7,
+      potentially_connected_idea: {
+        idea: 'human_ai_content_authentication',
+        relation_strength: 0.8
+      },
     },
     sub_ideas: [],
-    order: 3,
+    order: 0,
   },
-  'idea-4': {
-    title: 'Test Idea 4',
-    content: '# Test Content 4\n\nThis is test content for idea 4.',
-    dimensions: {
-      field: 'DevOps',
-      readiness: 8,
-      complexity: 4,
-      potentially_connected_idea: null,
-    },
-    sub_ideas: [],
-    order: 4,
-  },
-  'idea-5': {
-    title: 'Test Idea 5',
-    content: '# Test Content 5\n\nThis is test content for idea 5.',
+  'educational_app_spaced_learning': {
+    title: 'Educational App with Spaced Learning (ושיננתם)',
+    content: '# Educational App with Spaced Learning (ושיננתם)\n\n## Core Concept\nEducational app for learning texts by heart (ושיננתם - "and you shall teach them diligently").\nThe chunk size of text the app teaches is variable and adjusts to adapt to the student.\nUses spaced repetition principles.',
     dimensions: {
       field: 'EdTech',
-      readiness: 9,
-      complexity: 6,
+      readiness: 4,
+      complexity: 5,
       potentially_connected_idea: null,
     },
     sub_ideas: [],
     order: 5,
+  },
+  'playwright_repository_split': {
+    title: 'Playwright Repository Split',
+    content: '# Playwright Repository Split\n\n## Core Concept\nSplit the playwright roll into a new repo.',
+    dimensions: {
+      field: 'DevOps',
+      readiness: 8,
+      complexity: 2,
+      potentially_connected_idea: null,
+    },
+    sub_ideas: [],
+    order: 6,
   },
 };
 
 export const mockDimensions = {
   dimensions_registry: {
     core_dimensions: {
+      max_dimensions: 4,
       field: {
-        description: "The primary field or domain where this idea applies",
+        description: "Domain of knowledge/application",
         values: [
           "AI Infrastructure",
-          "Network Security", 
           "DevOps",
-          "EdTech",
-          "Philosophy"
+          "EdTech", 
+          "Legal/Policy",
+          "Network Security",
+          "Philosophy",
+          "QA/Testing",
+          "Software Architecture",
+          "UI/UX Engineering"
         ]
       },
       readiness: {
-        description: "How ready this idea is for implementation",
+        description: "How close to implementation (1-10)",
         scale: {
-          "1": "Initial concept, needs research",
-          "2": "Research phase",
-          "3": "Concept defined",
-          "4": "Development needed",
-          "5": "Design complete",
-          "6": "Implementation started",
-          "7": "Working prototype",
-          "8": "Testing phase", 
-          "9": "Ready to deploy",
-          "10": "Deployed/Published"
+          "1-2": "Research question only",
+          "3-4": "Concept defined, needs development", 
+          "5-6": "Design complete, implementation started",
+          "7-8": "Working prototype/draft",
+          "9-10": "Ready to deploy/publish"
         }
       },
       complexity: {
-        description: "The complexity level of implementing this idea",
+        description: "Technical/conceptual difficulty (1-10)",
         scale: {
-          "1": "Trivial",
-          "5": "Moderate",
-          "10": "Fundamental"
+          "1-2": "Trivial implementation",
+          "3-4": "Standard patterns apply",
+          "5-6": "Some novel challenges",
+          "7-8": "Significant technical/conceptual challenges",
+          "9-10": "Fundamental/unsolved problems"
+        }
+      },
+      potentially_connected_idea: {
+        description: "Links between ideas",
+        structure: "{idea: IdeaKey, relation_strength: 0.0-1.0}",
+        strength_guide: {
+          "0.1-0.3": "Loose thematic connection",
+          "0.4-0.6": "Shared components or methods",
+          "0.7-0.9": "Strong interdependence"
         }
       }
     }

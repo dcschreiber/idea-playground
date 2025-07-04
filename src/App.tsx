@@ -67,11 +67,12 @@ function App() {
     setIsCreatingNew(false);
   };
 
-  const handleIdeaSave = async (ideaId: string | null, idea: Idea) => {
+  const handleIdeaSave = async (ideaId: string | null, idea: Idea): Promise<string | null> => {
     try {
       if (ideaId) {
         await dataService.saveIdea(ideaId, idea);
         setIdeas(prev => ({ ...prev, [ideaId]: idea }));
+        return ideaId;
       } else {
         // Set order for new idea
         const maxOrder = Math.max(...Object.values(ideas).map(i => i.order), 0);
@@ -79,10 +80,13 @@ function App() {
         
         const newId = await dataService.createIdea(newIdea);
         setIdeas(prev => ({ ...prev, [newId]: newIdea }));
+        return newId; // Return the new ID so modal can update
       }
-      handleModalClose();
+      // Don't automatically close modal - let user close it manually
+      // This allows auto-save status to be visible
     } catch (err) {
       console.error('Error saving idea:', err);
+      throw err; // Re-throw to let the modal handle error display
     }
   };
 
@@ -108,6 +112,20 @@ function App() {
       await loadIdeas(); // Reload ideas to reflect changes
     } catch (error) {
       console.error('Error updating idea:', error);
+    }
+  };
+
+  const handleIdeaDelete = async (ideaId: string) => {
+    try {
+      await dataService.deleteIdea(ideaId);
+      setIdeas(prev => {
+        const newIdeas = { ...prev };
+        delete newIdeas[ideaId];
+        return newIdeas;
+      });
+    } catch (error) {
+      console.error('Error deleting idea:', error);
+      throw error; // Re-throw to let the modal handle the error display
     }
   };
 
@@ -177,6 +195,7 @@ function App() {
           isCreatingNew={isCreatingNew}
           onClose={handleModalClose}
           onSave={handleIdeaSave}
+          onDelete={handleIdeaDelete}
         />
       )}
     </div>

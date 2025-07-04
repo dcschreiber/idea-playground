@@ -31,15 +31,15 @@
       "order": 2
     },
     "multi_dimensional_ui_system": {
-      "title": "Updated Test Title",
+      "title": "Idea Playground",
       "content": "# Multi-Dimensional UI System (Idea UI)\n\n## Core Concept\nA UI system to hold and display ideas in a structure like this document.\nEach edge has a dimension array with a short whitelist of keys.\nThen N UIs, each with a different display based on different dimension function.",
       "dimensions": {
         "field": "UI/UX Engineering",
-        "readiness": 1,
+        "readiness": 5,
         "complexity": 7,
         "potentially_connected_idea": {
           "idea": "human_ai_content_authentication",
-          "relation_strength": 0.8
+          "relation_strength": 0.5
         }
       },
       "sub_ideas": [],

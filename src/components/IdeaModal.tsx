@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
-import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, PencilIcon, EyeIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, PencilIcon, EyeIcon, CheckIcon, TrashIcon } from '@heroicons/react/24/outline';
 import MarkdownEditor from '@uiw/react-markdown-editor';
 import '@uiw/react-markdown-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
@@ -12,15 +12,18 @@ interface IdeaModalProps {
   ideaId: string | null;
   isCreatingNew: boolean;
   onClose: () => void;
-  onSave: (ideaId: string | null, idea: Idea) => void;
+  onSave: (ideaId: string | null, idea: Idea) => Promise<string | null>;
+  onDelete?: (ideaId: string) => void;
 }
 
 export const IdeaModal: React.FC<IdeaModalProps> = ({ 
-  ideaId, 
+  ideaId: initialIdeaId, 
   isCreatingNew, 
   onClose, 
-  onSave 
+  onSave,
+  onDelete
 }) => {
+  const [ideaId, setIdeaId] = useState<string | null>(initialIdeaId);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [dimensions, setDimensions] = useState<Dimensions>({
@@ -42,6 +45,10 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   const initialDataRef = useRef<{ title: string; content: string; dimensions: Dimensions } | null>(null);
 
   const availableConnections = Object.entries(allIdeas).filter(([id]) => id !== ideaId);
+
+  useEffect(() => {
+    setIdeaId(initialIdeaId);
+  }, [initialIdeaId]);
 
   useEffect(() => {
     loadData();
@@ -86,12 +93,21 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         const defaultField = fieldDimension && typeof fieldDimension === 'object' && fieldDimension.values 
           ? fieldDimension.values[0] 
           : '';
-        setDimensions({
+        const defaultDimensions = {
           field: defaultField,
           readiness: 1,
           complexity: 1,
           potentially_connected_idea: null,
-        });
+        };
+        setDimensions(defaultDimensions);
+        
+        // Initialize reference for new ideas so auto-save can detect changes
+        initialDataRef.current = {
+          title: '',
+          content: '# New Idea\n\n## Core Concept\n\n',
+          dimensions: defaultDimensions,
+        };
+        
         // New ideas start in edit mode
         setIsEditMode(true);
       }
@@ -118,7 +134,13 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         order: 0, // Will be set by the parent component
       };
       
-      await onSave(ideaId, idea);
+      const returnedId = await onSave(ideaId, idea);
+      
+      // If we got a new ID back (for new ideas), update our state
+      if (!ideaId && returnedId) {
+        setIdeaId(returnedId);
+      }
+      
       setLastSaved(new Date());
       setHasUnsavedChanges(false);
       
@@ -188,6 +210,21 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
 
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode);
+  };
+
+  const handleDelete = async () => {
+    if (!ideaId || isCreatingNew || !onDelete) return;
+    
+    const confirmed = window.confirm('Are you sure you want to delete this idea? This action cannot be undone.');
+    if (confirmed) {
+      try {
+        await onDelete(ideaId);
+        onClose();
+      } catch (err) {
+        console.error('Error deleting idea:', err);
+        alert('Failed to delete idea. Please try again.');
+      }
+    }
   };
 
   if (loading) {
@@ -436,12 +473,23 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                     </>
                   ) : null}
                 </div>
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Close
-                </button>
+                <div className="flex space-x-3">
+                  {!isCreatingNew && ideaId && onDelete && (
+                    <button
+                      onClick={handleDelete}
+                      className="px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center space-x-2"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                      <span>Delete</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={onClose}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>

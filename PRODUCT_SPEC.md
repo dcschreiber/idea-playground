@@ -47,6 +47,30 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
 - **Endpoints**: CRUD operations, reordering, filtering
 - **Persistence**: All changes saved to filesystem
 
+### 7. Enhanced Drag & Drop Experience
+- **Entire Card Draggable**: Full idea card is draggable, not just a small handle
+- **Visual Drag Feedback**: 
+  - Cards show rotation and scaling during drag
+  - Drag overlay with enhanced shadow and border styling
+  - Smooth transitions with 150ms easing
+- **Drop Zone Indicators**:
+  - Columns highlight with blue border and background when dragged over
+  - Empty columns show "Drop ideas here" message during drag
+  - Dashed border animation for valid drop targets
+  - Visual feedback differentiates between same-column reordering and cross-column moves
+- **Cross-Column Drag Support**: 
+  - Ideas can be dragged between readiness columns
+  - Automatically updates readiness level to match target column
+  - Supports dropping on empty columns or between existing cards
+- **Accessibility**: 
+  - Keyboard navigation support for drag operations
+  - Proper cursor states (grab/grabbing)
+  - Screen reader compatible drag and drop
+- **Performance**: 
+  - Smooth 60fps animations
+  - Optimized re-renders during drag operations
+  - Collision detection for precise drop targeting
+
 ## Technical Architecture
 
 ### Frontend Stack
