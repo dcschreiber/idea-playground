@@ -20,7 +20,7 @@
       "content": "# Generic Model Library\n\n## Core Concept\nLibrary that implements a generic model with:\n1. Input API - pull\n2. Output API - push  \n3. Scoring function",
       "dimensions": {
         "field": "Software Architecture",
-        "readiness": 6,
+        "readiness": 1,
         "complexity": 5,
         "potentially_connected_idea": {
           "idea": "human_ai_content_authentication",
@@ -35,7 +35,7 @@
       "content": "# Multi-Dimensional UI System (Idea UI)\n\n## Core Concept\nA UI system to hold and display ideas in a structure like this document.\nEach edge has a dimension array with a short whitelist of keys.\nThen N UIs, each with a different display based on different dimension function.",
       "dimensions": {
         "field": "UI/UX Engineering",
-        "readiness": 5,
+        "readiness": 7,
         "complexity": 7,
         "potentially_connected_idea": {
           "idea": "human_ai_content_authentication",
@@ -50,7 +50,7 @@
       "content": "# UI Spec Testing\n\n## Core Concept\nTest if current models are good enough to create a UI spec in multiple iterations.\nFor questions like that we can build a system to check when there is a new model.",
       "dimensions": {
         "field": "QA/Testing",
-        "readiness": 5,
+        "readiness": 1,
         "complexity": 4,
         "potentially_connected_idea": null
       },
@@ -62,7 +62,7 @@
       "content": "# Educational App with Spaced Learning (ושיננתם)\n\n## Core Concept\nEducational app for learning texts by heart (ושיננתם - \"and you shall teach them diligently\").\nThe chunk size of text the app teaches is variable and adjusts to adapt to the student.\nUses spaced repetition principles.",
       "dimensions": {
         "field": "EdTech",
-        "readiness": 4,
+        "readiness": 1,
         "complexity": 5,
         "potentially_connected_idea": null
       },
@@ -71,10 +71,10 @@
     },
     "mcp_server_sefaria": {
       "title": "MCP Server with Sefaria APIs",
-      "content": "# MCP Server with Sefaria APIs\n\n## Core Concept\nMCP server. So far, Sefaria APIs are free. But this will likely not work with AI DDOSing it.",
+      "content": "# Pricing for Sefaria MCP Server\n\n## Core Concept\nMCP server. So far, Sefaria APIs are free. But this will likely not work with AI DDOSing it.",
       "dimensions": {
         "field": "AI Infrastructure",
-        "readiness": 3,
+        "readiness": 1,
         "complexity": 7,
         "potentially_connected_idea": {
           "idea": "human_ai_content_authentication",
@@ -82,7 +82,7 @@
         }
       },
       "sub_ideas": [],
-      "order": 8
+      "order": 0
     },
     "human_ai_distinction": {
       "title": "Finding the deffinition of \"יראה\" that Humans would have and AI wouldn't",
@@ -108,30 +108,6 @@
       "sub_ideas": [],
       "order": 10
     },
-    "playwright_repository_split": {
-      "title": "Playwright Repository Split",
-      "content": "# Playwright Repository Split\n\n## Core Concept\nSplit the playwright roll into a new repo.",
-      "dimensions": {
-        "field": "DevOps",
-        "readiness": 8,
-        "complexity": 2,
-        "potentially_connected_idea": null
-      },
-      "sub_ideas": [],
-      "order": 6
-    },
-    "poms_multiple_sizes": {
-      "title": "POMs (Page Object Models) for Multiple Sizes",
-      "content": "# POMs (Page Object Models) for Multiple Sizes\n\n## Core Concept\nPOMs for as many sizes as possible.\nAccessible through MCP.",
-      "dimensions": {
-        "field": "QA/Testing",
-        "readiness": 5,
-        "complexity": 4,
-        "potentially_connected_idea": null
-      },
-      "sub_ideas": [],
-      "order": 7
-    },
     "capitalism_analogies": {
       "title": "Capitalism Analogies Collection",
       "content": "# Capitalism Analogies Collection\n\n## Core Concepts\n**Ice cream melting**: A friend with ice cream too big for him, digging to get his favorite flavor at the bottom. The melting ice cream dripped on public property.\n\n**Coca-Cola as proof against efficient markets**: The existence and success of Coca-Cola proves there is no efficient market.\n\n## Note\nThis is just a store for analogies around capitalism at the moment.",
@@ -144,28 +120,25 @@
       "sub_ideas": [],
       "order": 11
     },
-    "k_means_whitelist_network": {
-      "title": "K-means Whitelist Network",
-      "content": "# K-means Whitelist Network\n\n## Core Concept\n\"It is a triggered question. Oh, maybe a network effect. What the fuck is a cool idea? To maybe do like a. I think it's called k-means\"\n\"Whitelist app. We could each time. Use the technology. Widely better wildly better. You can do this say for an hour.\"\n\n## Critical Point\nThis seems related to the authentication system but the transcript is fragmented. Is this the same idea or separate?",
+    "idea_1751612018417_kwumoganz": {
+      "title": "AI Talmud",
+      "content": "# AI Ethics Training Corpus\n\n## A Talmud like curpus of text on AI behaviour ethics for training popuses\n\n* Russel explains the idea of jewish phylosophy as: // TODO compleat\n\n",
       "dimensions": {
-        "field": "Network Security",
-        "readiness": 3,
-        "complexity": 6,
-        "potentially_connected_idea": {
-          "idea": "human_ai_content_authentication",
-          "relation_strength": 0.9
-        }
+        "field": "AI Infrastructure",
+        "readiness": 1,
+        "complexity": 1,
+        "potentially_connected_idea": null
       },
       "sub_ideas": [],
       "order": 12
     },
-    "idea-1": {
-      "title": "Updated Test Title",
-      "content": "# Test Content 1\n\nThis is test content for idea 1..",
+    "idea_1751612050910_aa2kcl4yf": {
+      "title": "AI Corpus",
+      "content": "# AI Ethics Training Corpus\n\n## A Talmud like curpus of text on AI behaviour ethics for training popuses\n\n* Russel explains the idea of jewish phylosophy as: // TODO compleat\n\n",
       "dimensions": {
         "field": "AI Infrastructure",
-        "readiness": 5,
-        "complexity": 5,
+        "readiness": 1,
+        "complexity": 1,
         "potentially_connected_idea": null
       },
       "sub_ideas": [],
@@ -180,7 +153,7 @@
       "250701 OCR of Diary"
     ],
     "extraction_date": "2025-07-02",
-    "total_ideas": 12,
+    "total_ideas": 11,
     "hierarchy_preserved": true
   }
 }
