@@ -136,9 +136,9 @@
       "title": "AI Corpus",
       "content": "# AI Ethics Training Corpus\n\n## A Talmud like curpus of text on AI behaviour ethics for training popuses\n\n* Russel explains the idea of jewish phylosophy as: // TODO compleat\n\n",
       "dimensions": {
-        "field": "AI Infrastructure",
+        "field": "Philosophy",
         "readiness": 1,
-        "complexity": 1,
+        "complexity": 4,
         "potentially_connected_idea": null
       },
       "sub_ideas": [],
