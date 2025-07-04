@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
-import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, PencilIcon, EyeIcon, CheckIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, PencilIcon, EyeIcon, CheckIcon, TrashIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import MarkdownEditor from '@uiw/react-markdown-editor';
 import '@uiw/react-markdown-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
@@ -14,6 +14,14 @@ interface IdeaModalProps {
   onClose: () => void;
   onSave: (ideaId: string | null, idea: Idea) => Promise<string | null>;
   onDelete?: (ideaId: string) => void;
+}
+
+type NewIdeaPhase = 'title-validation' | 'editing';
+
+interface TitleValidationState {
+  isValidating: boolean;
+  isValid: boolean;
+  error: string | null;
 }
 
 export const IdeaModal: React.FC<IdeaModalProps> = ({ 
@@ -41,7 +49,16 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   const [fieldValues, setFieldValues] = useState<string[]>([]);
   const [allIdeas, setAllIdeas] = useState<Record<string, Idea>>({});
   
+  // New idea creation state
+  const [newIdeaPhase, setNewIdeaPhase] = useState<NewIdeaPhase>('title-validation');
+  const [titleValidation, setTitleValidation] = useState<TitleValidationState>({
+    isValidating: false,
+    isValid: false,
+    error: null,
+  });
+  
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const titleValidationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const initialDataRef = useRef<{ title: string; content: string; dimensions: Dimensions } | null>(null);
 
   const availableConnections = Object.entries(allIdeas).filter(([id]) => id !== ideaId);
@@ -53,6 +70,50 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   useEffect(() => {
     loadData();
   }, [ideaId, isCreatingNew]);
+
+  // Title validation effect for new ideas
+  useEffect(() => {
+    if (!isCreatingNew || newIdeaPhase !== 'title-validation') return;
+
+    // Clear existing timeout
+    if (titleValidationTimeoutRef.current) {
+      clearTimeout(titleValidationTimeoutRef.current);
+    }
+
+    // Reset validation state if title is empty
+    if (!title.trim()) {
+      setTitleValidation({ isValidating: false, isValid: false, error: null });
+      return;
+    }
+
+    // Set validation state to loading
+    setTitleValidation(prev => ({ ...prev, isValidating: true, error: null }));
+
+    // Debounce validation
+    titleValidationTimeoutRef.current = setTimeout(async () => {
+      try {
+        const result = await dataService.validateTitle(title.trim());
+        setTitleValidation({
+          isValidating: false,
+          isValid: result.isUnique,
+          error: result.isUnique ? null : `A ${result.conflictingTitle ? `"${result.conflictingTitle}"` : 'title already exists'}`,
+        });
+      } catch (error) {
+        console.error('Title validation error:', error);
+        setTitleValidation({
+          isValidating: false,
+          isValid: false,
+          error: 'Unable to validate title. Please try again.',
+        });
+      }
+    }, 500);
+
+    return () => {
+      if (titleValidationTimeoutRef.current) {
+        clearTimeout(titleValidationTimeoutRef.current);
+      }
+    };
+  }, [title, isCreatingNew, newIdeaPhase]);
 
   const loadData = async () => {
     try {
@@ -86,10 +147,12 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
             dimensions: idea.dimensions,
           };
         }
-      } else {
+      } else if (isCreatingNew) {
         // Reset for new idea
         setTitle('');
-        setContent('# New Idea\n\n## Core Concept\n\n');
+        setNewIdeaPhase('title-validation');
+        setTitleValidation({ isValidating: false, isValid: false, error: null });
+        
         const defaultField = fieldDimension && typeof fieldDimension === 'object' && fieldDimension.values 
           ? fieldDimension.values[0] 
           : '';
@@ -100,16 +163,6 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
           potentially_connected_idea: null,
         };
         setDimensions(defaultDimensions);
-        
-        // Initialize reference for new ideas so auto-save can detect changes
-        initialDataRef.current = {
-          title: '',
-          content: '# New Idea\n\n## Core Concept\n\n',
-          dimensions: defaultDimensions,
-        };
-        
-        // New ideas start in edit mode
-        setIsEditMode(true);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -118,9 +171,28 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     }
   };
 
-  // Auto-save function with debouncing
+  const handleContinueToEditing = () => {
+    if (!titleValidation.isValid || !title.trim()) return;
+    
+    // Generate default content with the validated title
+    const defaultContent = `# ${title.trim()}\n\n## Core Concept\n\n`;
+    setContent(defaultContent);
+    
+    // Initialize reference for auto-save detection
+    initialDataRef.current = {
+      title: title.trim(),
+      content: defaultContent,
+      dimensions,
+    };
+    
+    // Switch to editing phase
+    setNewIdeaPhase('editing');
+    setIsEditMode(true);
+  };
+
+  // Auto-save function with debouncing (only for editing phase)
   const autoSave = useCallback(async () => {
-    if (!title.trim() || (!ideaId && !isCreatingNew)) {
+    if (!title.trim() || (!ideaId && !isCreatingNew) || (isCreatingNew && newIdeaPhase !== 'editing')) {
       return;
     }
 
@@ -155,11 +227,11 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     } finally {
       setSaving(false);
     }
-  }, [title, content, dimensions, ideaId, isCreatingNew, onSave]);
+  }, [title, content, dimensions, ideaId, isCreatingNew, onSave, newIdeaPhase]);
 
-  // Check for changes and trigger auto-save
+  // Check for changes and trigger auto-save (only in editing phase)
   useEffect(() => {
-    if (!initialDataRef.current || loading) return;
+    if (!initialDataRef.current || loading || (isCreatingNew && newIdeaPhase !== 'editing')) return;
 
     const hasChanges = 
       title.trim() !== initialDataRef.current.title ||
@@ -186,7 +258,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [title, content, dimensions, autoSave, loading]);
+  }, [title, content, dimensions, autoSave, loading, isCreatingNew, newIdeaPhase]);
 
   const handleSave = async () => {
     // Manual save for immediate save (keeping for compatibility)
@@ -238,6 +310,108 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     );
   }
 
+  // Render title validation phase for new ideas
+  if (isCreatingNew && newIdeaPhase === 'title-validation') {
+    return (
+      <Dialog 
+        as="div" 
+        className="fixed inset-0 z-50 flex items-center justify-center" 
+        onClose={onClose}
+        data-testid="idea-modal"
+        open={true}
+      >
+        <div className="fixed inset-0 bg-black bg-opacity-25" />
+
+        <div className="fixed inset-0 overflow-y-auto flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full bg-white shadow-xl rounded-xl max-w-2xl p-8 relative z-10" data-testid="title-validation-phase">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">Create New Idea</h2>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Title Input Section */}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">
+                  Enter a unique title for your idea
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="My amazing idea..."
+                    data-testid="title-input"
+                    className={clsx(
+                      "w-full px-4 py-3 text-lg border-2 rounded-lg outline-none transition-colors",
+                      titleValidation.error && !titleValidation.isValidating
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                        : titleValidation.isValid
+                        ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                        : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+                    )}
+                    autoFocus
+                  />
+                  
+                  {/* Validation Icons */}
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    {titleValidation.isValidating && (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                    )}
+                    {!titleValidation.isValidating && titleValidation.isValid && (
+                      <CheckIcon className="h-5 w-5 text-green-500" data-testid="title-valid" />
+                    )}
+                    {!titleValidation.isValidating && titleValidation.error && (
+                      <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                    )}
+                  </div>
+                </div>
+                
+                {/* Error Message */}
+                {titleValidation.error && (
+                  <p className="mt-2 text-sm text-red-600" data-testid="title-error">
+                    {titleValidation.error}
+                  </p>
+                )}
+                
+                {/* Success Message */}
+                {titleValidation.isValid && !titleValidation.error && (
+                  <p className="mt-2 text-sm text-green-600">
+                    ✓ Title is available
+                  </p>
+                )}
+              </div>
+
+              {/* Continue Button */}
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={handleContinueToEditing}
+                  disabled={!titleValidation.isValid || titleValidation.isValidating || !title.trim()}
+                  data-testid="continue-button"
+                  className={clsx(
+                    "px-6 py-3 text-lg font-medium rounded-lg transition-all duration-200",
+                    titleValidation.isValid && !titleValidation.isValidating && title.trim()
+                      ? "bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  )}
+                >
+                  Continue to Editing
+                </button>
+              </div>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+    );
+  }
+
+  // Render main editing interface (for existing ideas or new ideas in editing phase)
   return (
     <Dialog 
       as="div" 
@@ -252,7 +426,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         <Dialog.Panel className={clsx(
           "w-full bg-white shadow-xl rounded-xl max-w-5xl max-h-[90vh] overflow-hidden relative z-10",
           isFullscreen && "h-full max-w-none max-h-none rounded-none"
-        )}>
+        )} data-testid="editing-phase">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <input
@@ -262,71 +436,67 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
               placeholder="Enter idea title..."
               data-testid="modal-title"
               className="text-xl font-semibold text-gray-900 bg-transparent border-none outline-none flex-1 mr-4"
+              readOnly={isCreatingNew && newIdeaPhase === 'editing'} // Title is locked during editing phase for new ideas
             />
+            
             <div className="flex items-center space-x-2">
+              {/* Edit/Preview Toggle */}
               <button
                 onClick={toggleEditMode}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-md"
                 data-testid="edit-toggle"
-              >
-                {isEditMode ? (
-                  <EyeIcon className="h-5 w-5" />
-                ) : (
-                  <PencilIcon className="h-5 w-5" />
+                className={clsx(
+                  "p-2 rounded-lg border transition-colors",
+                  isEditMode 
+                    ? "bg-blue-100 border-blue-300 text-blue-700"
+                    : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
                 )}
+                title={isEditMode ? "Switch to Preview" : "Switch to Edit"}
+              >
+                {isEditMode ? <EyeIcon className="h-5 w-5" /> : <PencilIcon className="h-5 w-5" />}
               </button>
+
+              {/* Fullscreen Toggle */}
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-md"
+                className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               >
-                {isFullscreen ? (
-                  <ArrowsPointingInIcon className="h-5 w-5" />
-                ) : (
+                {isFullscreen ? 
+                  <ArrowsPointingInIcon className="h-5 w-5" /> : 
                   <ArrowsPointingOutIcon className="h-5 w-5" />
-                )}
+                }
               </button>
+
+              {/* Close */}
               <button
                 onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-md"
+                className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                title="Close"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
           </div>
 
-          <div className={clsx(
-            "grid",
-            isFullscreen ? "grid-cols-3 h-[calc(100vh-73px)]" : "grid-cols-1 lg:grid-cols-3 max-h-[calc(90vh-73px)]"
-          )}>
-            {/* Content - Takes up 2 columns */}
-            <div className="col-span-2 p-6 border-r border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Content</h3>
-                <span className="text-sm text-gray-500">
-                  {isEditMode ? 'Edit Mode' : 'Preview Mode'}
-                </span>
-              </div>
-              
+          <div className="flex flex-1 overflow-hidden">
+            {/* Main Content */}
+            <div className="flex-1 p-6 overflow-y-auto">
               {isEditMode ? (
-                <div 
-                  className={clsx(
-                    "border border-gray-300 rounded-lg overflow-hidden",
-                    isFullscreen ? "h-[calc(100%-4rem)]" : "h-96"
-                  )}
+                <MarkdownEditor
+                  value={content}
+                  onChange={setContent}
+                  data-color-mode="light"
                   data-testid="markdown-editor"
-                >
-                  <MarkdownEditor
-                    value={content}
-                    onChange={(value) => setContent(value || '')}
-                    height={isFullscreen ? '100%' : '384px'}
-                    visible={true}
-                  />
-                </div>
+                  className={clsx(
+                    "border border-gray-200 rounded-lg overflow-hidden",
+                    isFullscreen ? "h-[calc(100vh-8rem)]" : "h-96"
+                  )}
+                />
               ) : (
                 <div 
                   className={clsx(
                     "border border-gray-200 rounded-lg p-6 overflow-y-auto bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors",
-                    isFullscreen ? "h-[calc(100%-4rem)]" : "h-96"
+                    isFullscreen ? "h-[calc(100vh-8rem)]" : "h-96"
                   )}
                   onClick={() => setIsEditMode(true)}
                   data-testid="markdown-preview"
@@ -344,8 +514,8 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
             </div>
 
             {/* Dimensions Form */}
-            <div className="p-6 overflow-y-auto" data-testid="dimensions-form">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Dimensions</h3>
+            <div className="w-80 border-l border-gray-200 p-6 overflow-y-auto bg-gray-50" data-testid="dimensions-form">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Dimensions</h3>
               
               <div className="space-y-6">
                 {/* Field */}
@@ -358,6 +528,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                     onChange={(e) => handleDimensionChange('field', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
+                    <option value="">Select field...</option>
                     {fieldValues.map((field) => (
                       <option key={field} value={field}>
                         {field}
@@ -366,7 +537,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                   </select>
                 </div>
 
-                {/* Readiness */}
+                {/* Readiness Level */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Readiness Level: {dimensions.readiness}
@@ -385,7 +556,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                   </div>
                 </div>
 
-                {/* Complexity */}
+                {/* Complexity Level */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Complexity Level: {dimensions.complexity}
@@ -428,11 +599,11 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                   {dimensions.potentially_connected_idea && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Connection Strength: {Math.round(dimensions.potentially_connected_idea.relation_strength * 100)}%
+                        Relation Strength: {(dimensions.potentially_connected_idea.relation_strength * 100).toFixed(0)}%
                       </label>
                       <input
                         type="range"
-                        min="0.1"
+                        min="0"
                         max="1"
                         step="0.1"
                         value={dimensions.potentially_connected_idea.relation_strength}
@@ -442,55 +613,51 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                         )}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>Loose</span>
-                        <span>Strong</span>
-                      </div>
                     </div>
                   )}
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Auto-save Status */}
-              <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center space-x-2 text-sm">
-                  {saving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      <span className="text-gray-600">Saving...</span>
-                    </>
-                  ) : hasUnsavedChanges ? (
-                    <>
-                      <div className="h-2 w-2 bg-orange-400 rounded-full"></div>
-                      <span className="text-gray-600">Unsaved changes</span>
-                    </>
-                  ) : lastSaved ? (
-                    <>
-                      <CheckIcon className="h-4 w-4 text-green-500" />
-                      <span className="text-gray-600">
-                        Saved {lastSaved.toLocaleTimeString()}
-                      </span>
-                    </>
-                  ) : null}
-                </div>
-                <div className="flex space-x-3">
-                  {!isCreatingNew && ideaId && onDelete && (
-                    <button
-                      onClick={handleDelete}
-                      className="px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center space-x-2"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                      <span>Delete</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={onClose}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
+          {/* Footer */}
+          <div className="flex justify-between items-center p-6 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center space-x-2 text-sm">
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-gray-600">Saving...</span>
+                </>
+              ) : hasUnsavedChanges ? (
+                <>
+                  <div className="h-2 w-2 bg-orange-400 rounded-full"></div>
+                  <span className="text-gray-600">Unsaved changes</span>
+                </>
+              ) : lastSaved ? (
+                <>
+                  <CheckIcon className="h-4 w-4 text-green-500" />
+                  <span className="text-gray-600">
+                    Saved {lastSaved.toLocaleTimeString()}
+                  </span>
+                </>
+              ) : null}
+            </div>
+            <div className="flex space-x-3">
+              {!isCreatingNew && ideaId && onDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center space-x-2"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  <span>Delete</span>
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Close
+              </button>
             </div>
           </div>
         </Dialog.Panel>

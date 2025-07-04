@@ -193,7 +193,7 @@ test.describe('Idea Playground', () => {
     await expect(page.locator('[data-testid="markdown-preview"]')).not.toBeVisible();
   });
 
-  test('should create new idea', async ({ page }) => {
+  test('should create new idea with title validation workflow', async ({ page }) => {
     await page.goto('/');
     
     // Wait for data to load
@@ -203,12 +203,26 @@ test.describe('Idea Playground', () => {
     // Click new idea button
     await page.locator('text=New Idea').click();
     
-    // Should open modal in edit mode for new ideas
+    // Should open modal in title validation phase
     await expect(page.locator('[data-testid="idea-modal"]')).toBeVisible();
+    await expect(page.locator('[data-testid="title-validation-phase"]')).toBeVisible();
+    
+    // Enter unique title
+    await page.locator('[data-testid="title-input"]').fill('New Test Idea');
+    
+    // Wait for validation and continue
+    await expect(page.locator('[data-testid="continue-button"]')).toBeEnabled();
+    await page.locator('[data-testid="continue-button"]').click();
+    
+    // Should transition to editing phase
+    await expect(page.locator('[data-testid="editing-phase"]')).toBeVisible();
     await expect(page.locator('[data-testid="markdown-editor"]')).toBeVisible();
     
-    // Enter title and content
-    await page.locator('[data-testid="modal-title"]').fill('New Test Idea');
+    // Title should be populated
+    await expect(page.locator('[data-testid="modal-title"]')).toHaveValue('New Test Idea');
+    
+    // Edit content to trigger auto-save
+    await page.locator('[data-testid="markdown-editor"] textarea').fill('# New Test Idea\n\n## Core Concept\nThis is my new idea content.');
     
     // Wait for auto-save to trigger (2 seconds debounce + processing time)
     await page.waitForTimeout(3000);
@@ -295,6 +309,181 @@ test.describe('Idea Playground', () => {
     page.on('dialog', async dialog => {
       expect(dialog.message()).toContain('Are you sure you want to delete this idea?');
       await dialog.accept();
+    });
+  });
+
+  // New title validation workflow tests
+  test.describe('New Idea Creation with Title Validation', () => {
+    test('should start in title validation phase', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click new idea button
+      await page.locator('text=New Idea').click();
+      
+      // Should open modal in title validation phase
+      await expect(page.locator('[data-testid="idea-modal"]')).toBeVisible();
+      await expect(page.locator('[data-testid="title-validation-phase"]')).toBeVisible();
+      
+      // Should show title input and continue button
+      await expect(page.locator('[data-testid="title-input"]')).toBeVisible();
+      await expect(page.locator('[data-testid="continue-button"]')).toBeVisible();
+      
+      // Continue button should be disabled initially
+      await expect(page.locator('[data-testid="continue-button"]')).toBeDisabled();
+      
+      // Should not show editing interface yet
+      await expect(page.locator('[data-testid="markdown-editor"]')).not.toBeVisible();
+      await expect(page.locator('[data-testid="dimensions-form"]')).not.toBeVisible();
+    });
+
+    test('should validate title uniqueness in real-time', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click new idea button
+      await page.locator('text=New Idea').click();
+      
+      // Try entering an existing title (from mock data)
+      await page.locator('[data-testid="title-input"]').fill('Updated Test Title');
+      
+      // Should show error state
+      await expect(page.locator('[data-testid="title-error"]')).toBeVisible();
+      await expect(page.locator('[data-testid="title-error"]')).toContainText('title already exists');
+      await expect(page.locator('[data-testid="continue-button"]')).toBeDisabled();
+      
+      // Input should have error styling
+      await expect(page.locator('[data-testid="title-input"]')).toHaveClass(/border-red/);
+    });
+
+    test('should allow unique title and enable continue button', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click new idea button
+      await page.locator('text=New Idea').click();
+      
+      // Enter a unique title
+      await page.locator('[data-testid="title-input"]').fill('My Unique Test Idea');
+      
+      // Should show valid state
+      await expect(page.locator('[data-testid="title-error"]')).not.toBeVisible();
+      await expect(page.locator('[data-testid="title-valid"]')).toBeVisible();
+      await expect(page.locator('[data-testid="continue-button"]')).toBeEnabled();
+      
+      // Input should have success styling
+      await expect(page.locator('[data-testid="title-input"]')).toHaveClass(/border-green/);
+    });
+
+    test('should transition to editing phase after title validation', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click new idea button
+      await page.locator('text=New Idea').click();
+      
+      // Enter unique title
+      await page.locator('[data-testid="title-input"]').fill('My Unique Test Idea');
+      
+      // Wait for validation
+      await expect(page.locator('[data-testid="continue-button"]')).toBeEnabled();
+      
+      // Click continue
+      await page.locator('[data-testid="continue-button"]').click();
+      
+      // Should transition to editing phase
+      await expect(page.locator('[data-testid="title-validation-phase"]')).not.toBeVisible();
+      await expect(page.locator('[data-testid="editing-phase"]')).toBeVisible();
+      
+      // Should show editing interface
+      await expect(page.locator('[data-testid="markdown-editor"]')).toBeVisible();
+      await expect(page.locator('[data-testid="dimensions-form"]')).toBeVisible();
+      
+      // Title should be populated in the header
+      await expect(page.locator('[data-testid="modal-title"]')).toHaveValue('My Unique Test Idea');
+      
+      // Should have default content
+      await expect(page.locator('[data-testid="markdown-editor"] textarea')).toContainText('# My Unique Test Idea');
+    });
+
+    test('should enable auto-save in editing phase', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Complete title validation phase
+      await page.locator('text=New Idea').click();
+      await page.locator('[data-testid="title-input"]').fill('Auto Save Test Idea');
+      await page.locator('[data-testid="continue-button"]').click();
+      
+      // Wait for editing phase
+      await expect(page.locator('[data-testid="editing-phase"]')).toBeVisible();
+      
+      // Edit content to trigger auto-save
+      await page.locator('[data-testid="markdown-editor"] textarea').fill('# Auto Save Test Idea\n\n## New Content\nThis should auto-save.');
+      
+      // Should show unsaved changes indicator
+      await expect(page.locator('text=Unsaved changes')).toBeVisible();
+      
+      // Wait for auto-save (2 seconds debounce + processing time)
+      await page.waitForTimeout(3000);
+      
+      // Should show saved status
+      await expect(page.locator('text=/Saved.*/')).toBeVisible({ timeout: 10000 });
+    });
+
+    test('should handle case-insensitive title validation', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click new idea button
+      await page.locator('text=New Idea').click();
+      
+      // Try entering existing title with different case
+      await page.locator('[data-testid="title-input"]').fill('UPDATED TEST TITLE');
+      
+      // Should show error state (case-insensitive)
+      await expect(page.locator('[data-testid="title-error"]')).toBeVisible();
+      await expect(page.locator('[data-testid="continue-button"]')).toBeDisabled();
+    });
+
+    test('should validate empty title', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click new idea button
+      await page.locator('text=New Idea').click();
+      
+      // Title should be empty initially
+      await expect(page.locator('[data-testid="title-input"]')).toHaveValue('');
+      await expect(page.locator('[data-testid="continue-button"]')).toBeDisabled();
+      
+      // Enter some text then clear it
+      await page.locator('[data-testid="title-input"]').fill('Some title');
+      await page.locator('[data-testid="title-input"]').fill('');
+      
+      // Should disable continue button again
+      await expect(page.locator('[data-testid="continue-button"]')).toBeDisabled();
     });
   });
 }); 

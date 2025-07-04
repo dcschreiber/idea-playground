@@ -20,11 +20,23 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
 - **Keyboard Shortcuts**: Standard markdown editor shortcuts
 
 ### 3. Idea Management
-- **Create**: "New Idea" button opens modal with default template
+- **Create**: "New Idea" button opens modal with title validation workflow
 - **Edit**: Click any card to open in modal editor
 - **Save**: Real-time saving to backend API
 - **Delete**: Available only in full screen editing page
 - **Metadata**: Title, content, dimensions, connections, order
+
+#### New Idea Creation Workflow
+1. **Title Entry Phase**: Modal opens with focus on title input field
+   - User must enter a unique title before proceeding to editing
+   - Real-time validation against existing idea titles
+   - Visual feedback for validation state (valid/invalid/checking)
+   - "Continue" button enabled only when title is unique and non-empty
+2. **Editing Phase**: After unique title validation passes
+   - Automatically transitions to full editing mode
+   - Default content template populated
+   - Auto-save enabled with 2-second debounce
+   - All dimension editing capabilities available
 
 ### 4. Dimensions System
 - **Field/Topic**: Categorical classification (AI Infrastructure, DevOps, EdTech, etc.)
@@ -44,8 +56,13 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
 ### 6. Backend Integration
 - **API Server**: Express.js REST API
 - **Data Storage**: JSON files (ideas.json, dimensions.json)
-- **Endpoints**: CRUD operations, reordering, filtering
+- **Endpoints**: CRUD operations, reordering, filtering, title validation
 - **Persistence**: All changes saved to filesystem
+
+#### Title Validation API
+- **Endpoint**: `GET /api/ideas/validate-title?title={encoded_title}`
+- **Response**: `{ isUnique: boolean, conflictingId?: string }`
+- **Behavior**: Case-insensitive comparison, excludes current idea when editing
 
 ### 7. Enhanced Drag & Drop Experience
 - **Entire Card Draggable**: Full idea card is draggable, not just a small handle
@@ -113,8 +130,17 @@ interface Idea {
 1. **Browse Ideas**: View kanban board with all ideas organized by readiness
 2. **Filter Content**: Use filters to focus on specific topics or complexity
 3. **Edit Ideas**: Click card → modal opens in preview mode → edit in-place
-4. **Create Ideas**: Click "New Idea" → modal with template → fill and save
+4. **Create Ideas**: Click "New Idea" → title validation → editing mode with auto-save
 5. **Organize**: Drag cards within columns to reorder by priority
+
+### New Idea Creation Experience
+1. **Initial State**: Modal opens with large title input field and "Continue" button (disabled)
+2. **Title Entry**: User types title with real-time uniqueness validation
+   - Red border + error message if title exists
+   - Green border + checkmark when title is unique
+   - "Continue" button enables only with valid unique title
+3. **Transition**: Click "Continue" → automatically enter editing mode
+4. **Editing**: Full editor with populated default content and auto-save active
 
 ### Modal Editor Behavior
 - **Default State**: Preview mode showing rendered markdown

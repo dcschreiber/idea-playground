@@ -135,6 +135,38 @@ app.post('/api/ideas/reorder', async (req, res) => {
   }
 });
 
+// Validate title uniqueness
+app.get('/api/ideas/validate-title', async (req, res) => {
+  try {
+    const { title, excludeId } = req.query;
+    
+    if (!title || typeof title !== 'string') {
+      return res.status(400).json({ error: 'Title parameter is required' });
+    }
+    
+    const ideasData = await readJsonFile(IDEAS_FILE);
+    const titleLower = title.trim().toLowerCase();
+    
+    // Check if title exists (case-insensitive), excluding the specified ID if provided
+    const conflictingEntry = Object.entries(ideasData.ideas).find(([id, idea]: [string, any]) => {
+      return id !== excludeId && idea.title.toLowerCase() === titleLower;
+    });
+    
+    if (conflictingEntry) {
+      res.json({ 
+        isUnique: false, 
+        conflictingId: conflictingEntry[0],
+        conflictingTitle: conflictingEntry[1].title
+      });
+    } else {
+      res.json({ isUnique: true });
+    }
+  } catch (error) {
+    console.error('Error validating title:', error);
+    res.status(500).json({ error: 'Failed to validate title' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

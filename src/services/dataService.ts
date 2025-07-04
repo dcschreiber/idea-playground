@@ -158,6 +158,27 @@ class DataService {
     }
   }
 
+  async validateTitle(title: string, excludeId?: string): Promise<{ isUnique: boolean; conflictingId?: string; conflictingTitle?: string }> {
+    try {
+      const params = new URLSearchParams();
+      params.append('title', title);
+      if (excludeId) {
+        params.append('excludeId', excludeId);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/ideas/validate-title?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error validating title:', error);
+      throw error;
+    }
+  }
+
   async reorderIdeas(orderedIds: string[]): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/ideas/reorder`, {
