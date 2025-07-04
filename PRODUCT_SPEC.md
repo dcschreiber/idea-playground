@@ -88,6 +88,14 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
   - Optimized re-renders during drag operations
   - Collision detection for precise drop targeting
 
+### 8. Search Filter
+- **Title Search**: A text input above the kanban board allows users to filter ideas by title
+- **Case-insensitive**: Matches any part of the title, ignoring case
+- **Real-time**: Results update as the user types (no submit button)
+- **No interaction with other filters**: Works independently of field/readiness/complexity filters
+- **Clearable**: Clearing the input restores the full list of ideas
+- **UI**: Input should have placeholder text (e.g., "Search by title...") and `data-testid="search-title-input"` for testing
+
 ## Technical Architecture
 
 ### Frontend Stack

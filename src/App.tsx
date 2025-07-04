@@ -15,6 +15,7 @@ function App() {
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [searchTitle, setSearchTitle] = useState('');
 
   useEffect(() => {
     loadIdeas();
@@ -23,6 +24,25 @@ function App() {
   useEffect(() => {
     applyFilters();
   }, [ideas, filters]);
+
+  // Store base filtered ideas (from dimension filters) separately
+  const [baseFilteredIdeas, setBaseFilteredIdeas] = useState<Record<string, Idea>>({});
+
+  // Apply search filter in addition to other filters
+  useEffect(() => {
+    if (!searchTitle.trim()) {
+      setFilteredIdeas(baseFilteredIdeas);
+      return;
+    }
+    const lower = searchTitle.trim().toLowerCase();
+    setFilteredIdeas(
+      Object.fromEntries(
+        Object.entries(baseFilteredIdeas).filter(([, idea]) =>
+          idea.title.toLowerCase().includes(lower)
+        )
+      )
+    );
+  }, [searchTitle, baseFilteredIdeas]);
 
   const loadIdeas = async () => {
     try {
@@ -41,7 +61,7 @@ function App() {
   const applyFilters = async () => {
     try {
       const filtered = await dataService.filterIdeas(filters);
-      setFilteredIdeas(filtered);
+      setBaseFilteredIdeas(filtered);
     } catch (err) {
       console.error('Error filtering ideas:', err);
     }
@@ -177,8 +197,12 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <FilterPanel filters={filters} onFiltersChange={setFilters} />
-        
+        <FilterPanel
+          filters={filters}
+          onFiltersChange={setFilters}
+          searchTitle={searchTitle}
+          onSearchTitleChange={setSearchTitle}
+        />
         <div className="mt-8">
           <KanbanView
             ideas={filteredIdeas}

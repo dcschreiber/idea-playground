@@ -96,7 +96,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         setTitleValidation({
           isValidating: false,
           isValid: result.isUnique,
-          error: result.isUnique ? null : `A ${result.conflictingTitle ? `"${result.conflictingTitle}"` : 'title already exists'}`,
+          error: result.isUnique ? null : 'title already exists',
         });
       } catch (error) {
         console.error('Title validation error:', error);

@@ -2,8 +2,9 @@
 alwaysApply: true
 ---
 ## Important Notes
-- Run the tests in a way that will finish in a command line so Cursor chat doesn't get stuck - npx playwright test --reporter=list
+- Run the tests with --reporter=list when possible
 - Use PlayWright MCP when relevant to manually test every change you make
 - Stick to the PRODUCT_SPEC.md and keep it up to date with changes
 - Where possible, use existing popular libraries
 - If you are unsure about any detail, stop and ask me
+- Commit every time you reach a stable working version with all tests passing

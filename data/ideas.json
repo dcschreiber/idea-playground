@@ -143,6 +143,18 @@
       },
       "sub_ideas": [],
       "order": 0
+    },
+    "idea_1751622398765_yg4va1sny": {
+      "title": "Auto Save Test Idea",
+      "content": "# Auto Save Test Idea\n\n## Core Concept# Auto Save Test Idea\n\n",
+      "dimensions": {
+        "field": "AI Infrastructure",
+        "readiness": 1,
+        "complexity": 1,
+        "potentially_connected_idea": null
+      },
+      "sub_ideas": [],
+      "order": 7
     }
   },
   "metadata": {
@@ -153,7 +165,7 @@
       "250701 OCR of Diary"
     ],
     "extraction_date": "2025-07-02",
-    "total_ideas": 11,
+    "total_ideas": 12,
     "hierarchy_preserved": true
   }
 }
