@@ -3,34 +3,18 @@ import { mockIdeas, mockDimensions } from './fixtures/test-data';
 
 test.describe('Idea Playground', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock API responses - handle multiple calls
-    await page.route('**/api/ideas', async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            ideas: mockIdeas,
-            metadata: {
-              source_documents: [],
-              extraction_date: new Date().toISOString(),
-              total_ideas: Object.keys(mockIdeas).length,
-              hierarchy_preserved: true,
-            },
-          }),
-        });
-      } else if (route.request().method() === 'POST') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ id: 'new-idea-id', success: true }),
-        });
-      } else {
-        route.continue();
-      }
+    // Mock Firebase Functions API responses
+    await page.route('**/getIdeas', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ideas: mockIdeas,
+        }),
+      });
     });
 
-    await page.route('**/api/dimensions', async (route) => {
+    await page.route('**/getDimensions', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -38,63 +22,80 @@ test.describe('Idea Playground', () => {
       });
     });
 
-    // Mock title validation endpoint FIRST before the generic ideas/** route
-    await page.route('**/api/ideas/validate-title', async (route) => {
-      const url = new URL(route.request().url());
-      const title = url.searchParams.get('title')?.toLowerCase() || '';
-      const excludeId = url.searchParams.get('excludeId');
+    // Mock create idea endpoint
+    await page.route('**/createIdea', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ id: 'new-idea-id' }),
+        });
+      } else {
+        route.continue();
+      }
+    });
 
-      // Check if title matches any existing titles in mock data (case-insensitive)
-      const conflictingEntry = Object.entries(mockIdeas).find(([id, idea]) => {
-        return id !== excludeId && idea.title.toLowerCase() === title;
-      });
+    // Mock update idea endpoint
+    await page.route('**/updateIdea**', async (route) => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ id: 'updated-idea-id' }),
+        });
+      } else {
+        route.continue();
+      }
+    });
+
+    // Mock delete idea endpoint
+    await page.route('**/deleteIdea**', async (route) => {
+      if (route.request().method() === 'DELETE') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Idea deleted successfully' }),
+        });
+      } else {
+        route.continue();
+      }
+    });
+
+    // Mock title validation endpoint
+    await page.route('**/validateTitle**', async (route) => {
+      const url = new URL(route.request().url());
+                      const title = url.searchParams.get('title')?.toLowerCase() || '';
+        const excludeId = url.searchParams.get('excludeId');
+
+        // Check if title matches any existing titles in mock data (case-insensitive)
+        const conflictingEntry = Object.entries(mockIdeas).find(([id, idea]) => {
+          return id !== excludeId && idea.title.toLowerCase() === title;
+        });
 
       if (conflictingEntry) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
-            isUnique: false,
-            conflictingId: conflictingEntry[0],
-            conflictingTitle: conflictingEntry[1].title
+            isValid: false,
           }),
         });
       } else {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ isUnique: true }),
+          body: JSON.stringify({ isValid: true }),
         });
       }
     });
 
-    // Mock save and delete requests for existing ideas
-    await page.route('**/api/ideas/**', async (route) => {
-      // Skip if this is the validate-title endpoint (already handled above)
-      if (route.request().url().includes('validate-title')) {
-        route.continue();
-        return;
-      }
-
-      if (route.request().method() === 'POST') {
-        // Update existing idea
+    // Mock reorder ideas endpoint
+    await page.route('**/reorderIdeas', async (route) => {
+      if (route.request().method() === 'PUT') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ success: true }),
-        });
-      } else if (route.request().method() === 'PUT') {
-        // Update existing idea (alternative endpoint)
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ success: true }),
-        });
-      } else if (route.request().method() === 'DELETE') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ success: true }),
+          body: JSON.stringify({ message: 'Ideas reordered successfully' }),
         });
       } else {
         route.continue();
@@ -488,15 +489,12 @@ test.describe('Idea Playground', () => {
 
     test('should enable auto-save in editing phase', async ({ page }) => {
       // Add specific title validation route for this test
-      await page.route('**/api/ideas/validate-title*', async (route) => {
-        const url = new URL(route.request().url());
-        const title = url.searchParams.get('title')?.toLowerCase() || '';
-        
+      await page.route('**/validateTitle*', async (route) => {
         // Always return unique for this test
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ isUnique: true }),
+          body: JSON.stringify({ isValid: true }),
         });
       });
       
@@ -531,7 +529,7 @@ test.describe('Idea Playground', () => {
 
     test('should handle case-insensitive title validation', async ({ page }) => {
       // Add specific title validation route for this test
-      await page.route('**/api/ideas/validate-title*', async (route) => {
+      await page.route('**/validateTitle*', async (route) => {
         const url = new URL(route.request().url());
         const title = url.searchParams.get('title')?.toLowerCase() || '';
         
@@ -540,16 +538,14 @@ test.describe('Idea Playground', () => {
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify({
-              isUnique: false,
-              conflictingId: 'multi_dimensional_ui_system',
-              conflictingTitle: 'Updated Test Title'
+              isValid: false,
             }),
           });
         } else {
           await route.fulfill({
             status: 200,
             contentType: 'application/json',
-            body: JSON.stringify({ isUnique: true }),
+            body: JSON.stringify({ isValid: true }),
           });
         }
       });

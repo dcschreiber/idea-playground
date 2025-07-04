@@ -20,7 +20,7 @@ export interface ConnectedIdea {
 
 export interface IdeasData {
   ideas: Record<string, Idea>;
-  metadata: {
+  metadata?: {
     source_documents: string[];
     extraction_date: string;
     total_ideas: number;
@@ -36,11 +36,20 @@ export interface DimensionDefinition {
   strength_guide?: Record<string, string>;
 }
 
+export interface ScaleDimension {
+  levels: number;
+  labels: string[];
+}
+
 export interface DimensionsRegistry {
   dimensions_registry: {
     core_dimensions: {
       max_dimensions: number;
-      [key: string]: DimensionDefinition | number;
+      fields: string[];
+      readiness_scale: ScaleDimension;
+      complexity_scale: ScaleDimension;
+      // Keep the old structure for backward compatibility
+      [key: string]: DimensionDefinition | number | string[] | ScaleDimension;
     };
   };
 }

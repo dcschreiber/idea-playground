@@ -1,6 +1,9 @@
 import { Idea, IdeasData, DimensionsRegistry, DimensionFilters } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// Firebase Functions URLs
+const FUNCTIONS_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://us-central1-idea-playground-1f730.cloudfunctions.net'
+  : 'http://localhost:5001/idea-playground-1f730/us-central1';
 
 class DataService {
   private cache: {
@@ -13,7 +16,7 @@ class DataService {
 
   async getIdeas(): Promise<Record<string, Idea>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/ideas`);
+      const response = await fetch(`${FUNCTIONS_BASE_URL}/getIdeas`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -22,17 +25,13 @@ class DataService {
       return data.ideas;
     } catch (error) {
       console.error('Error fetching ideas:', error);
-      // Fallback to cached data if available
-      if (this.cache.ideas) {
-        return this.cache.ideas;
-      }
       throw error;
     }
   }
 
   async getDimensions(): Promise<DimensionsRegistry> {
     try {
-      const response = await fetch(`${API_BASE_URL}/dimensions`);
+      const response = await fetch(`${FUNCTIONS_BASE_URL}/getDimensions`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -41,31 +40,46 @@ class DataService {
       return data;
     } catch (error) {
       console.error('Error fetching dimensions:', error);
-      // Fallback to cached data if available
-      if (this.cache.dimensions) {
-        return this.cache.dimensions;
-      }
       throw error;
     }
   }
 
-  async saveIdea(id: string, idea: Idea): Promise<void> {
+  async createIdea(idea: Idea): Promise<string> {
     try {
-      const response = await fetch(`${API_BASE_URL}/ideas/${id}`, {
+      const response = await fetch(`${FUNCTIONS_BASE_URL}/createIdea`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(idea),
       });
-
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create idea');
       }
+      
+      const result = await response.json();
+      return result.id;
+    } catch (error) {
+      console.error('Error creating idea:', error);
+      throw error;
+    }
+  }
 
-      // Update cache
-      if (this.cache.ideas) {
-        this.cache.ideas[id] = idea;
+  async saveIdea(ideaId: string, idea: Idea): Promise<void> {
+    try {
+      const response = await fetch(`${FUNCTIONS_BASE_URL}/updateIdea?id=${ideaId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(idea),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update idea');
       }
     } catch (error) {
       console.error('Error saving idea:', error);
@@ -73,35 +87,19 @@ class DataService {
     }
   }
 
-  async updateIdea(id: string, updates: Partial<Idea>): Promise<void> {
+  async updateIdea(ideaId: string, updates: Partial<Idea>): Promise<void> {
     try {
-      // Get current idea data and merge with updates
-      if (!this.cache.ideas || !this.cache.ideas[id]) {
-        await this.getIdeas(); // Refresh cache
-      }
-      
-      const currentIdea = this.cache.ideas![id];
-      if (!currentIdea) {
-        throw new Error(`Idea ${id} not found`);
-      }
-      
-      const updatedIdea = { ...currentIdea, ...updates };
-      
-      const response = await fetch(`${API_BASE_URL}/ideas/${id}`, {
-        method: 'POST',
+      const response = await fetch(`${FUNCTIONS_BASE_URL}/updateIdea?id=${ideaId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedIdea),
+        body: JSON.stringify(updates),
       });
-
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Update cache
-      if (this.cache.ideas) {
-        this.cache.ideas[id] = updatedIdea;
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update idea');
       }
     } catch (error) {
       console.error('Error updating idea:', error);
@@ -109,48 +107,15 @@ class DataService {
     }
   }
 
-  async createIdea(idea: Idea): Promise<string> {
+  async deleteIdea(ideaId: string): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/ideas`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(idea),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      const newId = result.id;
-
-      // Update cache
-      if (this.cache.ideas) {
-        this.cache.ideas[newId] = idea;
-      }
-
-      return newId;
-    } catch (error) {
-      console.error('Error creating idea:', error);
-      throw error;
-    }
-  }
-
-  async deleteIdea(id: string): Promise<void> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/ideas/${id}`, {
+      const response = await fetch(`${FUNCTIONS_BASE_URL}/deleteIdea?id=${ideaId}`, {
         method: 'DELETE',
       });
-
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Update cache
-      if (this.cache.ideas) {
-        delete this.cache.ideas[id];
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete idea');
       }
     } catch (error) {
       console.error('Error deleting idea:', error);
@@ -158,51 +123,43 @@ class DataService {
     }
   }
 
-  async validateTitle(title: string, excludeId?: string): Promise<{ isUnique: boolean; conflictingId?: string; conflictingTitle?: string }> {
+  async reorderIdeas(reorderedIds: string[]): Promise<void> {
     try {
-      const params = new URLSearchParams();
-      params.append('title', title);
-      if (excludeId) {
-        params.append('excludeId', excludeId);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/ideas/validate-title?${params.toString()}`);
-
+      const response = await fetch(`${FUNCTIONS_BASE_URL}/reorderIdeas`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reorderedIds }),
+      });
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reorder ideas');
       }
-
-      return await response.json();
     } catch (error) {
-      console.error('Error validating title:', error);
+      console.error('Error reordering ideas:', error);
       throw error;
     }
   }
 
-  async reorderIdeas(orderedIds: string[]): Promise<void> {
+  async validateTitle(title: string, excludeId?: string): Promise<{ isUnique: boolean; conflictingId?: string; conflictingTitle?: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/ideas/reorder`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderedIds }),
-      });
-
+      const url = new URL(`${FUNCTIONS_BASE_URL}/validateTitle`);
+      url.searchParams.append('title', title);
+      if (excludeId) {
+        url.searchParams.append('excludeId', excludeId);
+      }
+      
+      const response = await fetch(url.toString());
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      // Update cache order
-      if (this.cache.ideas) {
-        orderedIds.forEach((id, index) => {
-          if (this.cache.ideas![id]) {
-            this.cache.ideas![id].order = index + 1;
-          }
-        });
-      }
+      
+      const result = await response.json();
+      return { isUnique: result.isValid };
     } catch (error) {
-      console.error('Error reordering ideas:', error);
+      console.error('Error validating title:', error);
       throw error;
     }
   }
@@ -211,51 +168,44 @@ class DataService {
     try {
       // Get fresh data for filtering
       const ideas = await this.getIdeas();
-      
-      const filteredIdeas: Record<string, Idea> = {};
-      
-      Object.entries(ideas).forEach(([id, idea]) => {
-        let matches = true;
-        
-        if (filters.field && idea.dimensions.field !== filters.field) {
-          matches = false;
-        }
-        
-        if (filters.readiness && idea.dimensions.readiness !== filters.readiness) {
-          matches = false;
-        }
-        
-        if (filters.complexity && idea.dimensions.complexity !== filters.complexity) {
-          matches = false;
-        }
-        
-        if (matches) {
-          filteredIdeas[id] = idea;
-        }
-      });
-      
-      return filteredIdeas;
+      return this.applyFilters(ideas, filters);
     } catch (error) {
       console.error('Error filtering ideas:', error);
       throw error;
     }
   }
 
-  // Health check for backend
-  async checkHealth(): Promise<boolean> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/health`);
-      return response.ok;
-    } catch (error) {
-      console.error('Backend health check failed:', error);
-      return false;
-    }
-  }
-
-  // Clear cache (useful for testing)
+  // Clear cache to force refresh
   clearCache(): void {
     this.cache.ideas = null;
     this.cache.dimensions = null;
+  }
+
+  // Apply filters to ideas
+  private applyFilters(ideas: Record<string, Idea>, filters: DimensionFilters): Record<string, Idea> {
+    const filtered: Record<string, Idea> = {};
+    
+    for (const [id, idea] of Object.entries(ideas)) {
+      let include = true;
+      
+      if (filters.field && idea.dimensions.field !== filters.field) {
+        include = false;
+      }
+      
+      if (filters.readiness && idea.dimensions.readiness !== filters.readiness) {
+        include = false;
+      }
+      
+      if (filters.complexity && idea.dimensions.complexity !== filters.complexity) {
+        include = false;
+      }
+      
+      if (include) {
+        filtered[id] = idea;
+      }
+    }
+    
+    return filtered;
   }
 }
 

@@ -76,48 +76,50 @@ export const mockDimensions = {
   dimensions_registry: {
     core_dimensions: {
       max_dimensions: 4,
-      field: {
-        description: "Domain of knowledge/application",
-        values: [
-          "AI Infrastructure",
-          "DevOps",
-          "EdTech", 
-          "Legal/Policy",
-          "Network Security",
-          "Philosophy",
-          "QA/Testing",
-          "Software Architecture",
-          "UI/UX Engineering"
+      fields: [
+        "technology", 
+        "business", 
+        "research", 
+        "personal",
+        "AI Infrastructure",
+        "DevOps",
+        "EdTech", 
+        "Legal/Policy",
+        "Network Security",
+        "Philosophy",
+        "QA/Testing",
+        "Software Architecture",
+        "UI/UX Engineering"
+      ],
+      readiness_scale: {
+        levels: 10,
+        labels: [
+          "research",
+          "research", 
+          "concept",
+          "concept",
+          "design",
+          "design",
+          "prototype",
+          "prototype",
+          "production",
+          "production"
         ]
       },
-      readiness: {
-        description: "How close to implementation (1-10)",
-        scale: {
-          "1-2": "Research question only",
-          "3-4": "Concept defined, needs development", 
-          "5-6": "Design complete, implementation started",
-          "7-8": "Working prototype/draft",
-          "9-10": "Ready to deploy/publish"
-        }
-      },
-      complexity: {
-        description: "Technical/conceptual difficulty (1-10)",
-        scale: {
-          "1-2": "Trivial implementation",
-          "3-4": "Standard patterns apply",
-          "5-6": "Some novel challenges",
-          "7-8": "Significant technical/conceptual challenges",
-          "9-10": "Fundamental/unsolved problems"
-        }
-      },
-      potentially_connected_idea: {
-        description: "Links between ideas",
-        structure: "{idea: IdeaKey, relation_strength: 0.0-1.0}",
-        strength_guide: {
-          "0.1-0.3": "Loose thematic connection",
-          "0.4-0.6": "Shared components or methods",
-          "0.7-0.9": "Strong interdependence"
-        }
+      complexity_scale: {
+        levels: 10,
+        labels: [
+          "trivial",
+          "trivial",
+          "easy",
+          "easy",
+          "medium",
+          "medium",
+          "hard",
+          "hard",
+          "expert",
+          "expert"
+        ]
       }
     }
   }

@@ -4,14 +4,22 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev": "concurrently \"npm run dev:emulators\" \"npm run dev:client\"",
     "dev:client": "vite",
     "dev:server": "tsx watch server/index.ts",
+    "dev:emulators": "firebase emulators:start --only functions,firestore,hosting",
     "build": "tsc -b && vite build",
+    "build:functions": "cd functions && npm run build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "playwright test --headed",
-    "test:ui": "playwright test --ui"
+    "test:ui": "playwright test --ui",
+    "migrate": "node migrate-to-firestore.js",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:functions": "npm run build:functions && firebase deploy --only functions",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "serve": "firebase emulators:start",
+    "logs": "firebase functions:log"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -24,6 +32,7 @@
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "firebase-admin": "^12.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -41,6 +50,7 @@
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
+    "firebase-tools": "^13.0.0",
     "globals": "^15.12.0",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",

@@ -23,7 +23,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Bars3Icon } from '@heroicons/react/24/outline';
+
 import clsx from 'clsx';
 
 interface KanbanViewProps {
@@ -304,7 +304,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
 
       if (activeColumn && overColumn) {
         const [activeColumnKey, activeItems] = activeColumn;
-        const [overColumnKey, overItems] = overColumn;
+        const [overColumnKey] = overColumn;
 
         if (activeColumnKey === overColumnKey) {
           // Reordering within the same column

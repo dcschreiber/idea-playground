@@ -4,7 +4,7 @@ import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, PencilIcon, Eye
 import MarkdownEditor from '@uiw/react-markdown-editor';
 import '@uiw/react-markdown-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
-import { Idea, Dimensions, ConnectedIdea } from '../types';
+import { Idea, Dimensions } from '../types';
 import { dataService } from '../services/dataService';
 import clsx from 'clsx';
 
@@ -126,9 +126,9 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
       ]);
       
       // Extract field values from dimensions
-      const fieldDimension = dimensionsData.dimensions_registry.core_dimensions.field;
-      if (typeof fieldDimension === 'object' && fieldDimension.values) {
-        setFieldValues(fieldDimension.values);
+      const fields = dimensionsData.dimensions_registry.core_dimensions.fields;
+      if (Array.isArray(fields)) {
+        setFieldValues(fields);
       }
       
       setAllIdeas(ideas);
@@ -153,8 +153,8 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         setNewIdeaPhase('title-validation');
         setTitleValidation({ isValidating: false, isValid: false, error: null });
         
-        const defaultField = fieldDimension && typeof fieldDimension === 'object' && fieldDimension.values 
-          ? fieldDimension.values[0] 
+        const defaultField = fields && fields.length > 0 
+          ? fields[0] 
           : '';
         const defaultDimensions = {
           field: defaultField,
@@ -260,10 +260,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     };
   }, [title, content, dimensions, autoSave, loading, isCreatingNew, newIdeaPhase]);
 
-  const handleSave = async () => {
-    // Manual save for immediate save (keeping for compatibility)
-    await autoSave();
-  };
+
 
   const handleDimensionChange = (key: keyof Dimensions, value: any) => {
     setDimensions(prev => ({ ...prev, [key]: value }));

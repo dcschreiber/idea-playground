@@ -1,0 +1,15 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light bulb shape -->
+  <path d="M16 3C12.6863 3 10 5.6863 10 9C10 11.2091 11.0909 13.1818 12.7273 14.4545C13.5455 15.0909 14.1818 15.9091 14.1818 16.9091V19.0909C14.1818 19.5909 14.5909 20 15.0909 20H16.9091C17.4091 20 17.8182 19.5909 17.8182 19.0909V16.9091C17.8182 15.9091 18.4545 15.0909 19.2727 14.4545C20.9091 13.1818 22 11.2091 22 9C22 5.6863 19.3137 3 16 3Z" fill="#F59E0B" stroke="#D97706" stroke-width="0.5"/>
+  
+  <!-- Screw base -->
+  <rect x="14" y="20" width="4" height="2" fill="#9CA3AF" stroke="#6B7280" stroke-width="0.5"/>
+  <rect x="14" y="22" width="4" height="1" fill="#6B7280"/>
+  
+  <!-- Screw threads -->
+  <line x1="14" y1="20.5" x2="18" y2="20.5" stroke="#6B7280" stroke-width="0.3"/>
+  <line x1="14" y1="21.5" x2="18" y2="21.5" stroke="#6B7280" stroke-width="0.3"/>
+  
+  <!-- Highlight on bulb -->
+  <ellipse cx="14" cy="8" rx="1.5" ry="2" fill="#FCD34D" opacity="0.6"/>
+</svg> 
