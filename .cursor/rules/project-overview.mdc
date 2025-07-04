@@ -10,11 +10,6 @@ This is an **idea playground** - a UI that allows the user to explore, develop, 
 - **Data abstraction**: Keep data layer separate in a simple backend
 - **User experience**: Focus on smooth interactions and intuitive UI
 
-## Important Notes
-- Run the tests in a way that will finish in a command line so Cursor chat doesn't get stuck - npx playwright test --reporter=list
-- Use PlayWright MCP to manually test every change you make
-- Stick to the PRODUCT_SPEC.md and keep it up to date with changes
-- Where possible, use existing popular libraries
 
 ## Key Features
 - **Multiple view modes**: Kanban board (organized by readiness) and detailed list view with reordering
