@@ -3,7 +3,7 @@ import { Idea, IdeasData, DimensionsRegistry, DimensionFilters } from '../types'
 // Firebase Functions URLs
 const FUNCTIONS_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://us-central1-idea-playground-1f730.cloudfunctions.net'
-  : 'http://localhost:5001/idea-playground-1f730/us-central1';
+  : 'https://us-central1-idea-playground-1f730.cloudfunctions.net'; // Use production for local dev
 
 class DataService {
   private cache: {
