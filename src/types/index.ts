@@ -45,11 +45,15 @@ export interface DimensionsRegistry {
   dimensions_registry: {
     core_dimensions: {
       max_dimensions: number;
-      fields: string[];
-      readiness_scale: ScaleDimension;
-      complexity_scale: ScaleDimension;
+      field: DimensionDefinition;
+      readiness: DimensionDefinition;
+      complexity: DimensionDefinition;
+      potentially_connected_idea: DimensionDefinition;
       // Keep the old structure for backward compatibility
-      [key: string]: DimensionDefinition | number | string[] | ScaleDimension;
+      fields?: string[];
+      readiness_scale?: ScaleDimension;
+      complexity_scale?: ScaleDimension;
+      [key: string]: DimensionDefinition | number | string[] | ScaleDimension | undefined;
     };
   };
 }

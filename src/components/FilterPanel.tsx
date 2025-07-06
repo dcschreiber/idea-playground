@@ -25,22 +25,28 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFiltersChan
       const dimensionsData = await dataService.getDimensions();
       
       // Extract field values from the new structure
-      const fields = dimensionsData.dimensions_registry.core_dimensions.fields;
-      if (Array.isArray(fields)) {
-        setFieldValues(fields);
+      const fieldDimension = dimensionsData.dimensions_registry.core_dimensions.field;
+      if (fieldDimension?.values && Array.isArray(fieldDimension.values)) {
+        setFieldValues(fieldDimension.values);
       }
       
-      // For readiness scale, create a simple mapping since the new structure is simplified
-      const readinessLevels = dimensionsData.dimensions_registry.core_dimensions.readiness_scale?.levels || 10;
-      const readinessLabels = dimensionsData.dimensions_registry.core_dimensions.readiness_scale?.labels || [];
-      
-      const readinessScaleMap: Record<string, string> = {};
-      for (let i = 1; i <= readinessLevels; i++) {
-        const labelIndex = Math.min(i - 1, readinessLabels.length - 1);
-        const label = readinessLabels[labelIndex] || 'level';
-        readinessScaleMap[`${i}-${i}`] = label;
+      // Extract readiness scale from the new structure
+      const readinessDimension = dimensionsData.dimensions_registry.core_dimensions.readiness;
+      if (readinessDimension?.scale) {
+        setReadinessScale(readinessDimension.scale);
+      } else {
+        // Fallback to old structure if available
+        const readinessLevels = dimensionsData.dimensions_registry.core_dimensions.readiness_scale?.levels || 10;
+        const readinessLabels = dimensionsData.dimensions_registry.core_dimensions.readiness_scale?.labels || [];
+        
+        const readinessScaleMap: Record<string, string> = {};
+        for (let i = 1; i <= readinessLevels; i++) {
+          const labelIndex = Math.min(i - 1, readinessLabels.length - 1);
+          const label = readinessLabels[labelIndex] || 'level';
+          readinessScaleMap[`${i}-${i}`] = label;
+        }
+        setReadinessScale(readinessScaleMap);
       }
-      setReadinessScale(readinessScaleMap);
     } catch (err) {
       console.error('Error loading filter options:', err);
     }

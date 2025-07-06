@@ -126,8 +126,10 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
       ]);
       
       // Extract field values from dimensions
-      const fields = dimensionsData.dimensions_registry.core_dimensions.fields;
-      if (Array.isArray(fields)) {
+      const fieldDimension = dimensionsData.dimensions_registry.core_dimensions.field;
+      let fields: string[] = [];
+      if (fieldDimension?.values && Array.isArray(fieldDimension.values)) {
+        fields = fieldDimension.values;
         setFieldValues(fields);
       }
       
