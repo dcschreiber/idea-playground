@@ -39,12 +39,24 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
    - All dimension editing capabilities available
 
 ### 4. Dimensions System
-- **Field/Topic**: Categorical classification (AI Infrastructure, DevOps, EdTech, etc.)
+- **Field/Topic**: Categorical classification (AI Infrastructure, DevOps, EdTech, Startup Ideas, etc.)
 - **Readiness Level**: determining column placement
 - **Complexity Level**: 1-10 scale (Trivial to Fundamental)
 - **Connected Ideas**: Link to other ideas with strength percentage
 - **Visual Tags**: Color-coded badges for each dimension
 - **Editable**: Any dimention that doesn't determin card position on kanban (or elsewhere) should be editable from a Dimensions page
+
+#### Available Field Categories
+- AI Infrastructure
+- DevOps
+- EdTech
+- Legal/Policy
+- Network Security
+- Philosophy
+- QA/Testing
+- Software Architecture
+- **Startup Ideas** - For entrepreneurial and business-focused ideas
+- UI/UX Engineering
 
 ### 5. Filtering System
 - **Field Filter**: Dropdown to filter by topic/field
