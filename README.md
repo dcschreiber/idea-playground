@@ -5,23 +5,28 @@ A multi-dimensional UI system for organizing and visualizing ideas with differen
 ## 📋 **Project Overview**
 
 - **Frontend**: React + TypeScript + Vite
-- **Backend**: Firebase Functions (serverless)
-- **Database**: Cloud Firestore (NoSQL)
-- **Hosting**: Firebase Hosting
+- **Backend**: Express.js + Node.js + TypeScript
+- **Database**: Google Cloud Firestore (NoSQL)
+- **Hosting**: Firebase Hosting (Frontend), Google Cloud Run (Backend)
 - **Testing**: Playwright E2E tests
 
 ## 🏗️ **Architecture**
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   React App     │    │ Firebase         │    │   Cloud         │
-│   (Frontend)    │◄──►│ Functions        │◄──►│   Firestore     │
-│                 │    │ (API Endpoints)  │    │   (Database)    │
+│   React App     │    │ Express.js       │    │   Cloud         │
+│   (Frontend)    │◄──►│ Backend          │◄──►│   Firestore     │
+│                 │    │ (RESTful API)    │    │   (Database)    │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
          │                       │                       │
          │              ┌──────────────────┐              │
-         └─────────────►│ Firebase Hosting │◄─────────────┘
-                        │ (Static Assets)  │
+         └─────────────►│ Firebase Hosting │              │
+                        │ (Static Assets)  │              │
+                        └──────────────────┘              │
+                                 │                        │
+                        ┌──────────────────┐              │
+                        │ Google Cloud Run │◄─────────────┘
+                        │ (Backend Host)   │
                         └──────────────────┘
 ```
 
@@ -34,9 +39,8 @@ A multi-dimensional UI system for organizing and visualizing ideas with differen
 - **npm** - Package manager
 - **Git** - Version control
 
-### **Optional (for local Firebase emulators)**
-- **Java Runtime 11+** - Required for Firestore emulator
-- **Firebase CLI** - For local development with emulators
+### **For Local Development**
+- **Firebase CLI** - For Firestore emulator
 
 ### **Installation**
 
@@ -47,16 +51,10 @@ A multi-dimensional UI system for organizing and visualizing ideas with differen
 # Install Firebase CLI globally
 npm install -g firebase-tools
 
-# Install Java (macOS with Homebrew)
-brew install openjdk@11
-echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
 # Verify installations
 node --version    # Should be 18+
 npm --version     # Should be 6+
 firebase --version # Should be 13+
-java -version     # Should be 11+ (optional)
 ```
 
 ---
@@ -70,17 +68,14 @@ java -version     # Should be 11+ (optional)
 git clone https://github.com/your-username/idea-playground.git
 cd idea-playground
 
-# Install dependencies
-npm install
-
-# Install Firebase Functions dependencies
-cd functions && npm install && cd ..
+# One-time automated setup (installs dependencies, sets up emulator, migrates data)
+npm run setup
 ```
 
-### **2. Firebase Configuration**
+### **2. Firebase Configuration** (if deploying)
 
 ```bash
-# Login to Firebase (if not already logged in)
+# Login to Firebase (only needed for deployment)
 firebase login
 
 # Verify project connection
@@ -91,21 +86,15 @@ firebase projects:list
 
 ### **3. Start Development**
 
-**Option A: Simple Setup (Recommended)**
 ```bash
-# Start frontend only (uses production Firebase Functions)
-npm run dev:client
-
-# Open browser to: http://localhost:3000
-```
-
-**Option B: Full Local Development**
-```bash
-# Start frontend + Firebase emulators (requires Java)
+# Start full development environment
 npm run dev
 
-# Open browser to: http://localhost:3000
-# Firebase UI: http://localhost:4000
+# This starts:
+# - Frontend: http://localhost:3000
+# - Backend: http://localhost:8080  
+# - Firestore Emulator: http://localhost:8080
+# - Emulator UI: http://localhost:4000
 ```
 
 ---
@@ -114,47 +103,44 @@ npm run dev
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev:client` | Frontend only (uses production backend) |
-| `npm run dev` | Frontend + Firebase emulators |
-| `npm run dev:simple` | Frontend + Functions emulator only |
-| `npm run dev:emulators` | Firebase emulators only |
-| `npm run build` | Build frontend for production |
-| `npm run build:functions` | Build Firebase Functions |
+| `npm run setup` | One-time automated setup |
+| `npm run dev` | Start full development environment |
+| `npm run dev:frontend` | Frontend only |
+| `npm run dev:backend` | Backend only |
+| `npm run dev:emulator` | Firestore emulator only |
+| `npm run build` | Build frontend + backend for production |
+| `npm run build:frontend` | Build frontend for production |
+| `npm run build:backend` | Build backend for production |
 | `npm test` | Run Playwright tests |
 | `npm run test:ui` | Run tests with UI |
-| `npm run migrate` | Migrate data to Firestore |
-| `npm run deploy` | Deploy to Firebase |
+| `npm run backup` | Backup production data |
+| `npm run deploy` | Deploy to Google Cloud Run + Firebase Hosting |
 
 ---
 
-## 🔧 **Local Development Options**
+## 🔧 **Local Development**
 
-### **Option 1: Production Backend (Recommended)**
-- ✅ **Fastest setup** - No Java required
-- ✅ **Real data** - Work with production database
-- ✅ **No port conflicts** - Only frontend runs locally
-- ✅ **Always works** - No emulator startup issues
-
-```bash
-npm run dev:client
-# Opens: http://localhost:3000
-```
-
-### **Option 2: Firebase Emulators**
-- ✅ **Complete local environment** - All services local
-- ✅ **Isolated testing** - Safe to experiment
-- ⚠️ **Requires Java** - Java 11+ needed for Firestore
-- ⚠️ **Port conflicts** - May need port configuration
+### **Complete Local Environment**
+- ✅ **Express.js backend** - Standard Node.js debugging
+- ✅ **Firestore emulator** - Isolated development data
+- ✅ **Real-time development** - Hot reload for frontend and backend
+- ✅ **No external dependencies** - Everything runs locally
 
 ```bash
-# Install Java first
-brew install openjdk@11
-
-# Start full environment
+# Start everything with one command
 npm run dev
-# Opens: http://localhost:3000
-# Firebase UI: http://localhost:4000
+
+# Individual services
+npm run dev:frontend  # React app only
+npm run dev:backend   # Express.js API only
+npm run dev:emulator  # Firestore emulator only
 ```
+
+### **Development URLs**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+- **Firestore Emulator**: http://localhost:8080
+- **Firebase UI**: http://localhost:4000
 
 ---
 
@@ -185,18 +171,16 @@ npm test -- --reporter=list
 
 ### **Common Issues**
 
-#### **Java Runtime Error**
+#### **Port Already in Use**
 ```bash
-Error: Process `java -version` has exited with code 1
+Error: listen EADDRINUSE: address already in use :::8080
 ```
 **Solution:**
 ```bash
-# Install Java
-brew install openjdk@11
+# Kill processes using the port
+lsof -ti:8080 | xargs kill -9
 
-# Add to PATH
-echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+# Or use different ports in the setup
 
 # Verify
 java -version
