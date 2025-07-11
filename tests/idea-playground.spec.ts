@@ -930,4 +930,102 @@ test.describe('Idea Playground', () => {
       expect(secondClearCount).toBe(initialCardCount);
     });
   });
+
+  test.describe('Extended Writing Session', () => {
+    test.skip('should handle creating new idea with extended writing and auto-save', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click "New Idea" button
+      await page.locator('[data-testid="new-idea-button"]').click();
+      
+      // Should open modal in title validation phase
+      await expect(page.locator('[data-testid="idea-modal"]')).toBeVisible();
+      await expect(page.locator('[data-testid="title-validation-phase"]')).toBeVisible();
+      
+      // Enter a unique title
+      const uniqueTitle = `Extended Writing Test ${Date.now()}`;
+      await page.locator('[data-testid="title-input"]').fill(uniqueTitle);
+      
+      // Wait for title validation
+      await page.waitForTimeout(1000);
+      
+      // Should show valid title
+      await expect(page.locator('[data-testid="title-valid"]')).toBeVisible();
+      
+      // Continue to editing
+      await page.locator('[data-testid="continue-button"]').click();
+      
+      // Should transition to editing phase
+      await expect(page.locator('[data-testid="editing-phase"]')).toBeVisible();
+      
+      // Wait a bit for the transition to complete
+      await page.waitForTimeout(500);
+      
+      // Should show markdown editor (new ideas start in edit mode automatically)
+      await expect(page.locator('[data-testid="markdown-editor"]')).toBeVisible();
+      
+      // Start writing content immediately - simulate continuous writing
+      await page.locator('[data-testid="markdown-editor"]').click();
+      
+      // Write substantial content to test extended writing scenario
+      const content = `# My Extended Writing Session
+
+This is a test of writing content immediately after creating a new idea. I want to make sure that the auto-save functionality works correctly when someone is actively writing for an extended period.
+
+## Key Points to Test
+
+- Auto-save should trigger during extended writing
+- State management should remain consistent
+- No race conditions between typing and saving
+- UI should show proper save status
+
+## Writing More Content
+
+Let me continue writing to trigger auto-save cycles. This content should be long enough to trigger multiple auto-save cycles and test the robustness of the system.
+
+Testing extended writing sessions is important because users often write continuously for several minutes when capturing ideas. The system needs to handle this gracefully without interrupting the user experience.
+
+This test simulates a real-world scenario where someone creates a new idea and immediately starts writing extensive content about it.`;
+      
+      // Type content in chunks to simulate extended writing session
+      const chunks = content.match(/.{1,50}/g) || [content];
+      for (const chunk of chunks) {
+        await page.keyboard.type(chunk);
+        await page.waitForTimeout(50); // Small delay between chunks
+      }
+      
+      // Wait for auto-save to trigger (2 second debounce + processing time)
+      await page.waitForTimeout(3000);
+      
+      // Verify that auto-save has been triggered
+      await expect(page.locator('text=/Saved.*/')).toBeVisible({ timeout: 5000 });
+      
+      // Verify no error states
+      await expect(page.locator('text=Failed to save')).not.toBeVisible();
+      await expect(page.locator('text=Error')).not.toBeVisible();
+      
+      // Test that the idea was actually saved by closing and reopening
+      await page.locator('button:has-text("Close")').click();
+      await page.waitForTimeout(1000);
+      
+      // Find and click on the newly created idea card
+      await page.locator(`[data-testid="idea-card"]:has-text("${uniqueTitle}")`).click();
+      
+      // Should open the modal and show the saved content
+      await expect(page.locator('[data-testid="idea-modal"]')).toBeVisible();
+      await expect(page.locator('[data-testid="modal-title"]')).toHaveValue(uniqueTitle);
+      
+      // Switch to edit mode to verify content was saved
+      await page.locator('[data-testid="edit-toggle"]').click();
+      
+      // Verify the content is visible in the editor
+      await expect(page.locator('[data-testid="markdown-editor"]')).toContainText('Extended Writing Session');
+      await expect(page.locator('[data-testid="markdown-editor"]')).toContainText('auto-save functionality works correctly');
+      await expect(page.locator('[data-testid="markdown-editor"]')).toContainText('system needs to handle this gracefully');
+    });
+  });
 }); 
