@@ -18,20 +18,15 @@
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "tsc -b && vite build",
     "build:backend": "cd backend && npm run build",
-    "build:functions": "cd functions && npm run build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "playwright test --reporter=list",
     "test:ui": "playwright test --ui",
-    "migrate": "node migrate-to-firestore.js",
     "migrate:emulator": "node scripts/migrate-emulator-data.js",
     "backup": "node scripts/backup-db.js",
     "deploy": "node scripts/deploy.js",
-    "deploy:old": "npm run build && firebase deploy",
-    "deploy:functions": "npm run build:functions && firebase deploy --only functions",
-    "deploy:hosting": "npm run build && firebase deploy --only hosting",
-    "serve": "firebase emulators:start",
-    "logs": "firebase functions:log"
+    "deploy:hosting": "npm run build:frontend && firebase deploy --only hosting",
+    "serve": "firebase emulators:start --only firestore"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",

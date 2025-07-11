@@ -1,0 +1,266 @@
+{
+  "timestamp": "2025-07-11T11:27:38.333Z",
+  "ideas": {
+    "ideas": {
+      "6FEdyat978GxpfHBQ0nj": {
+        "title": "Company Data MCP",
+        "sub_ideas": [],
+        "createdAt": "2025-07-11T10:42:20.889Z",
+        "order": 0,
+        "content": "# Company Data MCP\n\n## Create an MCP server that conencts to the companies information\n\nThe server would connect to the companies DB or a DB that is handled by a UI (The company can upload info)\n\n",
+        "dimensions": {
+          "field": "Startup Ideas",
+          "readiness": 1,
+          "complexity": 1,
+          "potentially_connected_idea": null
+        },
+        "updatedAt": "2025-07-11T10:44:06.382Z"
+      },
+      "91lqOYdzeJaX4wtuNwFS": {
+        "title": "Small Store Managment",
+        "sub_ideas": [],
+        "createdAt": "2025-07-11T07:39:34.101Z",
+        "dimensions": {
+          "field": "Startup Ideas",
+          "readiness": 1,
+          "complexity": 1,
+          "potentially_connected_idea": null
+        },
+        "order": 0,
+        "content": "# Small Store Managment\n\n## Option 1: Start with our own sore\n\n### Steps:\n1. Build a home decore store (candle store)\n2. Start creating software to simplify management\n3. Expand / Sell the software (Shopify modle)\n\n## Option 2: Find a pilot\n1. Build a pilot\n2. Find a store as a light house customer\n\n## Open Questions\n1. Which option to start with\n2. What software to start with\n3. Shold it be more Saas or more of a service\n  a. Service has more of a mote\n4. \n",
+        "updatedAt": "2025-07-11T07:52:40.911Z"
+      },
+      "NX6Es6h87UyPVMWBWD94": {
+        "title": "Lawyer App",
+        "sub_ideas": [],
+        "createdAt": "2025-07-11T11:03:46.476Z",
+        "order": 0,
+        "content": "# Lawyer App\n\n## An app that excelerates lawyers work\n\nThe is just a general field card that needs developing\n",
+        "dimensions": {
+          "field": "Startup Ideas",
+          "readiness": 1,
+          "complexity": 5,
+          "potentially_connected_idea": null
+        },
+        "updatedAt": "2025-07-11T11:04:50.145Z"
+      },
+      "Yalw3mLFSuAcqX4QplhB": {
+        "title": "API Aggregator - MCP",
+        "content": "# API Aggregator - MCP\n\n## Give companies an MCP server that aggregates payed information APIs\n\n",
+        "sub_ideas": [],
+        "createdAt": "2025-07-11T10:23:02.480Z",
+        "dimensions": {
+          "field": "Startup Ideas",
+          "readiness": 1,
+          "complexity": 1,
+          "potentially_connected_idea": null
+        },
+        "order": 0,
+        "updatedAt": "2025-07-11T10:23:23.800Z"
+      },
+      "generic_model_library": {
+        "title": "Generic Model Library",
+        "content": "# Generic Model Library\n\n## Core Concept\nLibrary that implements a generic model with:\n1. Input API - pull\n2. Output API - push  \n3. Scoring function",
+        "sub_ideas": [],
+        "createdAt": "2025-07-04T14:01:50.677Z",
+        "dimensions": {
+          "field": "Startup Ideas",
+          "readiness": 1,
+          "complexity": 5,
+          "potentially_connected_idea": {
+            "idea": "human_ai_content_authentication",
+            "relation_strength": 0.4
+          }
+        },
+        "order": 0,
+        "updatedAt": "2025-07-07T05:58:32.848Z"
+      },
+      "human_ai_distinction": {
+        "title": "Finding the deffinition of \"יראה\" that Humans would have and AI wouldn't",
+        "dimensions": {
+          "field": "Philosophy",
+          "readiness": 2,
+          "complexity": 10,
+          "potentially_connected_idea": null
+        },
+        "sub_ideas": [],
+        "createdAt": "2025-07-04T14:01:51.698Z",
+        "content": "# Finding the deffinition of \"יראה\" that Humans would have and AI wouldn't.\n\n You can build a website that outputs an answer for this offten, so much so that it enters the courpus and AI is trained to look for this",
+        "order": 0,
+        "updatedAt": "2025-07-07T06:00:09.919Z"
+      },
+      "idea_1751612050910_aa2kcl4yf": {
+        "title": "AI Corpus",
+        "dimensions": {
+          "field": "Philosophy",
+          "readiness": 3,
+          "complexity": 4,
+          "potentially_connected_idea": null
+        },
+        "sub_ideas": [],
+        "order": 0,
+        "createdAt": "2025-07-04T14:01:52.558Z",
+        "content": "# AI Ethics Training Corpus\n\n## A Talmud like curpus of text on AI behaviour ethics for training popuses\n\n* Russel explains the idea of jewish phylosophy as: // TODO compleat\n(I can't find the quote).",
+        "updatedAt": "2025-07-07T08:00:47.872Z"
+      },
+      "mcp_server_sefaria": {
+        "content": "# Pricing for Sefaria MCP Server\n\n## Core Concept\nMCP server. So far, Sefaria APIs are free. But this will likely not work with AI DDOSing it.",
+        "dimensions": {
+          "field": "AI Infrastructure",
+          "readiness": 1,
+          "complexity": 7,
+          "potentially_connected_idea": {
+            "idea": "human_ai_content_authentication",
+            "relation_strength": 0.7
+          }
+        },
+        "sub_ideas": [],
+        "order": 0,
+        "createdAt": "2025-07-04T14:01:51.453Z",
+        "title": "MCP Server with Sefaria APIs",
+        "updatedAt": "2025-07-04T14:34:02.224Z"
+      },
+      "multi_dimensional_ui_system": {
+        "title": "Idea Playground",
+        "content": "# Multi-Dimensional UI System (Idea UI)\n\n## Core Concept\nA UI system to hold and display ideas in a structure like this document.\nEach edge has a dimension array with a short whitelist of keys.\nThen N UIs, each with a different display based on different dimension function.",
+        "sub_ideas": [],
+        "order": 0,
+        "createdAt": "2025-07-04T14:01:50.936Z",
+        "dimensions": {
+          "field": "Startup Ideas",
+          "readiness": 7,
+          "complexity": 7,
+          "potentially_connected_idea": {
+            "idea": "human_ai_content_authentication",
+            "relation_strength": 0.5
+          }
+        },
+        "updatedAt": "2025-07-07T05:58:48.359Z"
+      },
+      "human_ai_content_authentication": {
+        "title": "Human-AI Content Authentication & Network Effects",
+        "content": "# Human-AI Content Authentication & Network Effects\n\n## Core Paper: \"Statistical Human Verification Networks\"\n\n### The Solution\n**One person, one account through statistical sampling**: Just as small random samples can represent large populations, a few random human verifications make maintaining fake accounts impractical. After 5-10 verifications from existing users, the cost of faking exceeds the benefit.\n\n**Trust through endorsement chains**: Content gains trust not from authorship but from human endorsements. Each endorsement builds a public trust tree. Users who consistently endorse quality content gain reputation; those who endorse garbage lose it.\n\n### The Problem  \n**Individual KYC is hard**: Traditional know-your-customer verification is expensive, invasive, and easily gamed at scale.\n\n**We can't distinguish human from AI content**: The crisis isn't just detecting AI writing - it's preserving spaces for authentic human thought and preventing AI training contamination.\n\n### How It Works\n**Entry (limited openings)**: New users pass a human test (distinctive mouse movements, response patterns) during limited time windows. They must sync with existing users' endorsements to stay.\n\n**Two-layer verification**: \n- **Signup verification**: Statistical sampling ensures one person = one account\n- **Content verification**: Ongoing endorsements identify authentic human content\n\n**Network-based entry**: To join, you need endorsements from users already in your social network. If enough of your Twitter/Facebook friends are members, you can apply for entry.\n\n### Implementation Ideas\n- **Sefaria Sheets**: Torah study platform for human interpretation\n- **Blog aggregator**: Links to human-verified blog posts\n- **Discussion forums**: Human-only conversation spaces\n\n## Additional Considerations\n\n### Attack Vectors\n- **Sybil attacks**: Mitigated by entry cost + time gates + reputation building time\n- **Purchased endorsements**: Expensive long-term due to reputation loss\n- **Uniformity pressure**: System may encourage populist content over diverse thought\n\n### Technical Requirements\n- Endorsement interface design\n- Reputation calculation algorithms\n- Statistical confidence thresholds\n- Platform integration APIs\n\n## Details to Develop\n\n### Statistical Methods\n- Exact sampling requirements for KYC confidence\n- Bot content detection algorithms\n- Network analysis for fake account clusters\n\n### Network Entry Mechanics  \n- How to sample from someone's existing social network\n- Minimum network overlap requirements\n- Cold start problem for early adopters\n\n### Open Problems\n- Balancing diversity vs. consensus in endorsements\n- Preventing echo chambers\n- Scaling beyond early adopters\n- Economic incentives for participation",
+        "dimensions": {
+          "field": "Network Security",
+          "readiness": 6,
+          "complexity": 8,
+          "potentially_connected_idea": {
+            "idea": "multi_dimensional_ui_system",
+            "relation_strength": 0.8
+          }
+        },
+        "sub_ideas": [],
+        "order": 1,
+        "createdAt": "2025-07-04T14:01:50.397Z",
+        "updatedAt": "2025-07-04T14:01:50.397Z"
+      },
+      "ui_spec_testing": {
+        "title": "UI Spec Testing",
+        "content": "# UI Spec Testing\n\n## Core Concept\nTest if current models are good enough to create a UI spec in multiple iterations.\nFor questions like that we can build a system to check when there is a new model.",
+        "dimensions": {
+          "field": "QA/Testing",
+          "readiness": 1,
+          "complexity": 4,
+          "potentially_connected_idea": null
+        },
+        "sub_ideas": [],
+        "order": 4,
+        "createdAt": "2025-07-04T14:01:51.073Z",
+        "updatedAt": "2025-07-04T14:01:51.073Z"
+      },
+      "educational_app_spaced_learning": {
+        "title": "Educational App with Spaced Learning (ושיננתם)",
+        "content": "# Educational App with Spaced Learning (ושיננתם)\n\n## Core Concept\nEducational app for learning texts by heart (ושיננתם - \"and you shall teach them diligently\").\nThe chunk size of text the app teaches is variable and adjusts to adapt to the student.\nUses spaced repetition principles.",
+        "dimensions": {
+          "field": "EdTech",
+          "readiness": 1,
+          "complexity": 5,
+          "potentially_connected_idea": null
+        },
+        "sub_ideas": [],
+        "order": 5,
+        "createdAt": "2025-07-04T14:01:51.316Z",
+        "updatedAt": "2025-07-04T14:01:51.316Z"
+      },
+      "legal_challenge_big_tech": {
+        "title": "Legal Challenge to Big Tech Terms of Service",
+        "content": "# Legal Challenge to Big Tech Terms of Service\n\n## Core Concept\nUsing WhatsApp as an example. Consent is not really consent in their Terms of Service. \nAssuming לא תפרוש מהציבור (do not separate from the community). \nIn IL I just can't not have it with that assumption. \nThis idea's goal is a legal case for some court to enforce big tech more.\n\n## Key Arguments\n- Social necessity doctrine\n- Illusory consent when alternative is social isolation\n- Market failure with network effects",
+        "dimensions": {
+          "field": "Legal/Policy",
+          "readiness": 4,
+          "complexity": 7,
+          "potentially_connected_idea": null
+        },
+        "sub_ideas": [],
+        "order": 10,
+        "createdAt": "2025-07-04T14:01:51.910Z",
+        "updatedAt": "2025-07-04T14:01:51.910Z"
+      },
+      "capitalism_analogies": {
+        "title": "Capitalism Analogies Collection",
+        "content": "# Capitalism Analogies Collection\n\n## Core Concepts\n**Ice cream melting**: A friend with ice cream too big for him, digging to get his favorite flavor at the bottom. The melting ice cream dripped on public property.\n\n**Coca-Cola as proof against efficient markets**: The existence and success of Coca-Cola proves there is no efficient market.\n\n## Note\nThis is just a store for analogies around capitalism at the moment.",
+        "dimensions": {
+          "field": "Philosophy",
+          "readiness": 1,
+          "complexity": 3,
+          "potentially_connected_idea": null
+        },
+        "sub_ideas": [],
+        "order": 11,
+        "createdAt": "2025-07-04T14:01:52.175Z",
+        "updatedAt": "2025-07-04T14:01:52.175Z"
+      }
+    }
+  },
+  "dimensions": {
+    "dimensions_registry": {
+      "core_dimensions": {
+        "max_dimensions": 4,
+        "field": {
+          "description": "Domain of knowledge/application",
+          "values": [
+            "AI Infrastructure",
+            "DevOps",
+            "EdTech",
+            "Legal/Policy",
+            "Network Security",
+            "Philosophy",
+            "QA/Testing",
+            "Software Architecture",
+            "UI/UX Engineering",
+            "Startup Ideas"
+          ]
+        },
+        "readiness": {
+          "description": "How close to implementation (1-10)",
+          "scale": {
+            "1-2": "Research question only",
+            "3-4": "Concept defined, needs development",
+            "5-6": "Design complete, implementation started",
+            "7-8": "Working prototype/draft",
+            "9-10": "Ready to deploy/publish"
+          }
+        },
+        "complexity": {
+          "description": "Technical/conceptual difficulty (1-10)",
+          "scale": {
+            "1-2": "Trivial implementation",
+            "3-4": "Standard patterns apply",
+            "5-6": "Some novel challenges",
+            "7-8": "Significant technical/conceptual challenges",
+            "9-10": "Fundamental/unsolved problems"
+          }
+        },
+        "potentially_connected_idea": {
+          "description": "Links between ideas",
+          "structure": "{idea: IdeaKey, relation_strength: 0.0-1.0}",
+          "strength_guide": {
+            "0.1-0.3": "Loose thematic connection",
+            "0.4-0.6": "Shared components or methods",
+            "0.7-0.9": "Strong interdependence"
+          }
+        }
+      }
+    }
+  }
+}
