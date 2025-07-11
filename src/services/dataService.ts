@@ -2,7 +2,7 @@ import { Idea, IdeasData, DimensionsRegistry, DimensionFilters } from '../types'
 
 // API Base URL - switches between local backend and production Cloud Run
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-cloud-run-url.run.app' // Will be updated during deployment
+  ? 'https://idea-playground-backend-1038191785150.us-central1.run.app'
   : 'http://localhost:8080';
 
 class DataService {
