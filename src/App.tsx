@@ -100,6 +100,12 @@ function App() {
         
         const newId = await dataService.createIdea(newIdea);
         setIdeas(prev => ({ ...prev, [newId]: newIdea }));
+        
+        // FIX: Update parent component state when new idea is created
+        // This transitions from "creating new" to "editing existing" state
+        setSelectedIdeaId(newId);
+        setIsCreatingNew(false);
+        
         return newId; // Return the new ID so modal can update
       }
       // Don't automatically close modal - let user close it manually
