@@ -66,7 +66,7 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
 - **Real-time**: Filters apply immediately
 
 ### 6. Backend Integration
-- **API Server**: Firebase Functions (serverless)
+- **API Server**: Express.js on Google Cloud Run
 - **Data Storage**: Cloud Firestore (NoSQL database)
 - **Endpoints**: CRUD operations, reordering, filtering, title validation
 - **Persistence**: All changes saved to Firestore with automatic scaling
@@ -120,11 +120,11 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
 - **Icons**: @heroicons/react
 
 ### Backend Stack
-- **Server**: Firebase Functions (serverless)
+- **Server**: Express.js on Google Cloud Run
 - **Database**: Cloud Firestore (NoSQL)
 - **CORS**: Enabled for frontend communication
 - **Authentication**: Firebase Authentication (ready for future implementation)
-- **Hosting**: Firebase Hosting for static assets
+- **Hosting**: Firebase Hosting (Frontend), Google Cloud Run (Backend)
 
 ### Data Structure
 ```typescript

@@ -214,14 +214,14 @@ firebase use idea-playground-1f730
 #### **Build Errors**
 ```bash
 # Clear caches and reinstall
-rm -rf node_modules functions/node_modules
+rm -rf node_modules backend/node_modules
 npm install
-cd functions && npm install
+cd backend && npm install
 ```
 
 ### **Development URLs**
 - **Frontend**: http://localhost:3000
-- **Firebase Functions**: http://localhost:5001/idea-playground-1f730/us-central1
+- **Backend API**: http://localhost:8080
 - **Firestore Emulator**: http://localhost:8080
 - **Firebase UI**: http://localhost:4000
 
@@ -236,17 +236,16 @@ cd functions && npm install
 ### **Deploy Everything**
 
 ```bash
-# Build and deploy
-node deploy.js
+# Build and deploy everything
+npm run deploy
 
 # Or individual services
-npm run deploy:functions  # Deploy Functions only
 npm run deploy:hosting   # Deploy Frontend only
 ```
 
 ### **Production URLs**
 - **Website**: https://idea-playground-1f730.web.app
-- **Functions**: https://us-central1-idea-playground-1f730.cloudfunctions.net
+- **Backend API**: https://your-cloud-run-url.run.app (deployed via Cloud Run)
 
 ---
 
@@ -258,15 +257,19 @@ idea-playground/
 │   ├── components/          # UI components
 │   ├── services/           # API service layer
 │   └── types/              # TypeScript types
-├── functions/              # Firebase Functions
-│   ├── src/                # Function source code
-│   └── package.json        # Function dependencies
+├── backend/                # Express.js backend
+│   ├── src/                # Backend source code
+│   ├── package.json        # Backend dependencies
+│   └── Dockerfile          # Docker configuration
+├── scripts/                # Automation scripts
+│   ├── deploy.js           # Deployment automation
+│   ├── backup-db.js        # Database backup
+│   └── setup.js            # Development setup
 ├── tests/                  # Playwright E2E tests
 ├── data/                   # Original JSON data (backup)
 ├── firebase.json           # Firebase configuration
 ├── package.json            # Frontend dependencies
-├── DEPLOYMENT.md           # Detailed deployment guide
-└── deploy.js              # Deployment automation
+└── DEPLOYMENT.md           # Detailed deployment guide
 ```
 
 ---
@@ -312,7 +315,7 @@ This project is for personal use. Contact for usage permissions.
 ## 🎯 **Development Status**
 
 - ✅ **Frontend**: Complete React app with TypeScript
-- ✅ **Backend**: Firebase Functions with full API
+- ✅ **Backend**: Express.js on Google Cloud Run with RESTful API
 - ✅ **Database**: Cloud Firestore with migrated data
 - ✅ **Testing**: 23 E2E tests passing
 - ✅ **Deployment**: Ready for production

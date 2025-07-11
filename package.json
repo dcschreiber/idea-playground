@@ -9,12 +9,7 @@
     "dev:frontend": "vite",
     "dev:backend": "cd backend && npm run dev",
     "dev:emulator": "firebase emulators:start --only firestore",
-    "dev:old": "concurrently \"npm run dev:emulators\" \"npm run dev:client\"",
-    "dev:simple": "concurrently \"npm run dev:emulators:no-firestore\" \"npm run dev:client\"",
-    "dev:client": "vite",
 
-    "dev:emulators": "firebase emulators:start --only functions,firestore,hosting",
-    "dev:emulators:no-firestore": "firebase emulators:start --only functions,hosting",
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "tsc -b && vite build",
     "build:backend": "cd backend && npm run build",
