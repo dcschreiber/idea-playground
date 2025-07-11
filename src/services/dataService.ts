@@ -1,9 +1,9 @@
 import { Idea, IdeasData, DimensionsRegistry, DimensionFilters } from '../types';
 
-// Firebase Functions URLs
-const FUNCTIONS_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://us-central1-idea-playground-1f730.cloudfunctions.net'
-  : 'https://us-central1-idea-playground-1f730.cloudfunctions.net'; // Use production for local dev
+// API Base URL - switches between local backend and production Cloud Run
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-cloud-run-url.run.app' // Will be updated during deployment
+  : 'http://localhost:8080';
 
 class DataService {
   private cache: {
@@ -16,7 +16,7 @@ class DataService {
 
   async getIdeas(): Promise<Record<string, Idea>> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}/getIdeas`);
+      const response = await fetch(`${API_BASE_URL}/api/ideas`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -31,7 +31,7 @@ class DataService {
 
   async getDimensions(): Promise<DimensionsRegistry> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}/getDimensions`);
+      const response = await fetch(`${API_BASE_URL}/api/dimensions`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -46,7 +46,7 @@ class DataService {
 
   async createIdea(idea: Idea): Promise<string> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}/createIdea`, {
+      const response = await fetch(`${API_BASE_URL}/api/ideas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ class DataService {
 
   async saveIdea(ideaId: string, idea: Idea): Promise<void> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}/updateIdea?id=${ideaId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/ideas/${ideaId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ class DataService {
 
   async updateIdea(ideaId: string, updates: Partial<Idea>): Promise<void> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}/updateIdea?id=${ideaId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/ideas/${ideaId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ class DataService {
 
   async deleteIdea(ideaId: string): Promise<void> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}/deleteIdea?id=${ideaId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/ideas/${ideaId}`, {
         method: 'DELETE',
       });
       
@@ -125,7 +125,7 @@ class DataService {
 
   async reorderIdeas(reorderedIds: string[]): Promise<void> {
     try {
-      const response = await fetch(`${FUNCTIONS_BASE_URL}/reorderIdeas`, {
+      const response = await fetch(`${API_BASE_URL}/api/ideas/reorder`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -145,13 +145,14 @@ class DataService {
 
   async validateTitle(title: string, excludeId?: string): Promise<{ isUnique: boolean; conflictingId?: string; conflictingTitle?: string }> {
     try {
-      const url = new URL(`${FUNCTIONS_BASE_URL}/validateTitle`);
-      url.searchParams.append('title', title);
-      if (excludeId) {
-        url.searchParams.append('excludeId', excludeId);
-      }
+      const response = await fetch(`${API_BASE_URL}/api/ideas/validate-title`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, excludeId }),
+      });
       
-      const response = await fetch(url.toString());
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
