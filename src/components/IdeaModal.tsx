@@ -156,11 +156,8 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         setNewIdeaPhase('title-validation');
         setTitleValidation({ isValidating: false, isValid: false, error: null });
         
-        const defaultField = fields && fields.length > 0 
-          ? fields[0] 
-          : '';
         const defaultDimensions = {
-          field: defaultField,
+          field: '', // Default to no field selected
           readiness: 1,
           complexity: 1,
           potentially_connected_idea: null,

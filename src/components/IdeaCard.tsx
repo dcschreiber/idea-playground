@@ -92,10 +92,12 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       {/* Dimensions */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {/* Field */}
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          <TagIcon className="h-3 w-3 mr-1" />
-          {idea.dimensions.field}
-        </span>
+        {idea.dimensions.field && (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <TagIcon className="h-3 w-3 mr-1" />
+            {idea.dimensions.field}
+          </span>
+        )}
 
         {/* Readiness */}
         <span className={clsx(

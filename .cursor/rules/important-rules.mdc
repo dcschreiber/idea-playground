@@ -2,7 +2,7 @@
 alwaysApply: true
 ---
 ## Important Notes
-- Run the tests with --reporter=list when possible
+- Run the tests with --reporter=list and headless when possible
 - Use PlayWright MCP when relevant to manually test every change you make
 - Stick to the PRODUCT_SPEC.md and keep it up to date with changes
 - Where possible, use existing popular libraries

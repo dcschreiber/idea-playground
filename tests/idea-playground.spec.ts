@@ -595,6 +595,35 @@ test.describe('Idea Playground', () => {
       await expect(page.locator('[data-testid="continue-button"]')).toBeDisabled();
     });
 
+    test('should default to no field selection for new ideas', async ({ page }) => {
+      await page.goto('/');
+      
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="idea-card"]');
+      await page.waitForTimeout(1000);
+      
+      // Click new idea button
+      await page.locator('text=New Idea').click();
+      
+      // Enter valid title
+      await page.locator('[data-testid="title-input"]').fill('Test Field Default');
+      await page.waitForTimeout(1000);
+      
+      // Continue to editing
+      await page.locator('[data-testid="continue-button"]').click();
+      
+      // Wait for editing phase
+      await expect(page.locator('[data-testid="editing-phase"]')).toBeVisible();
+      await page.waitForTimeout(500);
+      
+      // Check that field dropdown defaults to empty (no field selected)
+      const fieldSelect = page.locator('[data-testid="dimensions-form"] select').first();
+      await expect(fieldSelect).toHaveValue('');
+      
+      // Verify the option text shows "Select field..."
+      await expect(fieldSelect.locator('option[value=""]')).toContainText('Select field...');
+    });
+
     test('should transition from "creating new" state to "editing existing" state after auto-save', async ({ page }) => {
       // Mock API routes to ensure smooth test execution
       await page.route('**/validateTitle*', async (route) => {
