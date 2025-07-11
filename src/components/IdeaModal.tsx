@@ -42,6 +42,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -284,16 +285,19 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!ideaId || isCreatingNew || !onDelete) return;
+    if (!ideaId || isCreatingNew || !onDelete || deleting) return;
     
     const confirmed = window.confirm('Are you sure you want to delete this idea? This action cannot be undone.');
     if (confirmed) {
       try {
+        setDeleting(true);
         await onDelete(ideaId);
         onClose();
       } catch (err) {
         console.error('Error deleting idea:', err);
         alert('Failed to delete idea. Please try again.');
+      } finally {
+        setDeleting(false);
       }
     }
   };
@@ -645,15 +649,31 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
               {!isCreatingNew && ideaId && onDelete && (
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center space-x-2"
+                  disabled={deleting}
+                  className={clsx(
+                    "px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center space-x-2",
+                    deleting
+                      ? "text-gray-400 bg-gray-100 border border-gray-300 cursor-not-allowed"
+                      : "text-red-700 bg-white border border-red-300 hover:bg-red-50"
+                  )}
                 >
-                  <TrashIcon className="h-4 w-4" />
-                  <span>Delete</span>
+                  {deleting ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                  ) : (
+                    <TrashIcon className="h-4 w-4" />
+                  )}
+                  <span>{deleting ? "Deleting..." : "Delete"}</span>
                 </button>
               )}
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={deleting}
+                className={clsx(
+                  "px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+                  deleting
+                    ? "text-gray-400 bg-gray-100 border border-gray-300 cursor-not-allowed"
+                    : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                )}
               >
                 Close
               </button>
