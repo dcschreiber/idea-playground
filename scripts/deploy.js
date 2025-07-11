@@ -31,11 +31,11 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy backend package files
-COPY backend/package*.json ./
+COPY package*.json ./
 RUN npm ci --only=production
 
 # Copy backend source code
-COPY backend/dist ./dist
+COPY dist ./dist
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -121,11 +121,115 @@ function updateFrontendApiUrl(cloudRunUrl) {
   console.log(`✅ Frontend API URL updated to ${cloudRunUrl}`);
 }
 
+function checkDeploymentPrerequisites() {
+  console.log('🔍 Checking deployment prerequisites...');
+  
+  const checks = [
+    {
+      command: 'docker --version',
+      name: 'Docker',
+      requirement: 'Any version',
+      validator: (output) => output.includes('Docker version')
+    },
+    {
+      command: 'gcloud --version',
+      name: 'Google Cloud CLI',
+      requirement: 'Any version',
+      validator: (output) => output.includes('Google Cloud SDK')
+    },
+    {
+      command: 'firebase --version',
+      name: 'Firebase CLI',
+      requirement: '13+',
+      validator: (output) => {
+        const version = output.match(/(\d+)/);
+        return version && parseInt(version[1]) >= 13;
+      }
+    }
+  ];
+
+  let allGood = true;
+
+  for (const check of checks) {
+    try {
+      const output = execSync(check.command, { encoding: 'utf8', stdio: 'pipe' });
+      if (check.validator(output)) {
+        console.log(`✅ ${check.name}: Available`);
+      } else {
+        console.log(`❌ ${check.name}: ${output.trim()} (requires ${check.requirement})`);
+        allGood = false;
+      }
+    } catch (error) {
+      console.log(`❌ ${check.name}: Not installed (requires ${check.requirement})`);
+      allGood = false;
+    }
+  }
+
+  // Check Docker daemon
+  try {
+    execSync('docker info', { encoding: 'utf8', stdio: 'pipe' });
+    console.log('✅ Docker daemon: Running');
+  } catch (error) {
+    console.log('❌ Docker daemon: Not running');
+    allGood = false;
+  }
+
+  // Check authentication
+  try {
+    const gcloudAuth = execSync('gcloud auth list --format="value(account)" --filter="status:ACTIVE"', { 
+      encoding: 'utf8', stdio: 'pipe' 
+    }).trim();
+    if (gcloudAuth) {
+      console.log(`✅ Google Cloud: Authenticated as ${gcloudAuth}`);
+    } else {
+      console.log('❌ Google Cloud: Not authenticated');
+      allGood = false;
+    }
+  } catch (error) {
+    console.log('❌ Google Cloud: Authentication check failed');
+    allGood = false;
+  }
+
+  try {
+    const firebaseAuth = execSync('firebase list --json', { encoding: 'utf8', stdio: 'pipe' });
+    const projects = JSON.parse(firebaseAuth);
+    if (projects.length > 0) {
+      console.log('✅ Firebase: Authenticated');
+    } else {
+      console.log('❌ Firebase: Not authenticated or no projects');
+      allGood = false;
+    }
+  } catch (error) {
+    console.log('❌ Firebase: Authentication check failed');
+    allGood = false;
+  }
+
+  if (!allGood) {
+    console.log('');
+    console.log('🚨 Deployment prerequisites not met! Please:');
+    console.log('1. Install Docker: https://docker.com/get-started');
+    console.log('2. Install Google Cloud CLI: https://cloud.google.com/sdk/docs/install');
+    console.log('3. Install Firebase CLI: npm install -g firebase-tools');
+    console.log('4. Start Docker daemon');
+    console.log('5. Login to services:');
+    console.log('   - gcloud auth login');
+    console.log('   - firebase login');
+    console.log('   - gcloud auth configure-docker gcr.io');
+    console.log('');
+    throw new Error('Deployment prerequisites not met');
+  }
+
+  console.log('✅ All deployment prerequisites met');
+  console.log('');
+}
+
 async function deploy() {
   console.log('🚀 Starting deployment to Google Cloud...');
   console.log('');
 
   try {
+    // 0. Check prerequisites
+    checkDeploymentPrerequisites();
     // 1. Build everything
     runCommand('npm run build:backend', 'Building backend');
     runCommand('npm run build:frontend', 'Building frontend');
@@ -137,7 +241,7 @@ async function deploy() {
 
     // 3. Build and push Docker image
     runCommand(
-      `cd backend && docker build -t gcr.io/${PROJECT_ID}/${SERVICE_NAME} .`,
+      `cd backend && docker build --platform linux/amd64 -t gcr.io/${PROJECT_ID}/${SERVICE_NAME} .`,
       'Building Docker image'
     );
     

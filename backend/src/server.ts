@@ -52,7 +52,7 @@ async function startServer() {
     await initializeFirestore();
 
     // Start server
-    const server = app.listen(config.port, () => {
+    const server = app.listen(config.port, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${config.port}`);
       console.log(`📱 Environment: ${config.environment}`);
       console.log(`🔥 Firestore: ${config.firestore.emulator ? 'Emulator' : 'Production'}`);

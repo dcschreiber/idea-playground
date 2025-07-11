@@ -239,8 +239,8 @@ npm run build:backend
 cd backend
 
 # Create Dockerfile (automated by deploy script)
-# Build Docker image
-docker build -t gcr.io/idea-playground-1f730/idea-playground-backend .
+# Build Docker image (for Cloud Run architecture)
+docker build --platform linux/amd64 -t gcr.io/idea-playground-1f730/idea-playground-backend .
 
 # Push to Google Container Registry
 docker push gcr.io/idea-playground-1f730/idea-playground-backend

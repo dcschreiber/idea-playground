@@ -41,12 +41,77 @@ VITE_NODE_ENV=development
   console.log('✅ Frontend .env.local file created');
 }
 
+function checkPrerequisites() {
+  console.log('🔍 Checking prerequisites...');
+  
+  const checks = [
+    {
+      command: 'node --version',
+      name: 'Node.js',
+      requirement: '18+',
+      validator: (output) => {
+        const version = output.match(/v(\d+)/);
+        return version && parseInt(version[1]) >= 18;
+      }
+    },
+    {
+      command: 'npm --version',
+      name: 'npm',
+      requirement: '6+',
+      validator: (output) => {
+        const version = output.match(/(\d+)/);
+        return version && parseInt(version[1]) >= 6;
+      }
+    },
+    {
+      command: 'firebase --version',
+      name: 'Firebase CLI',
+      requirement: '13+',
+      validator: (output) => {
+        const version = output.match(/(\d+)/);
+        return version && parseInt(version[1]) >= 13;
+      }
+    }
+  ];
+
+  let allGood = true;
+
+  for (const check of checks) {
+    try {
+      const output = execSync(check.command, { encoding: 'utf8', stdio: 'pipe' });
+      if (check.validator(output)) {
+        console.log(`✅ ${check.name}: ${output.trim()}`);
+      } else {
+        console.log(`❌ ${check.name}: ${output.trim()} (requires ${check.requirement})`);
+        allGood = false;
+      }
+    } catch (error) {
+      console.log(`❌ ${check.name}: Not installed (requires ${check.requirement})`);
+      allGood = false;
+    }
+  }
+
+  if (!allGood) {
+    console.log('');
+    console.log('🚨 Missing prerequisites! Please install:');
+    console.log('- Node.js 18+: https://nodejs.org/');
+    console.log('- Firebase CLI: npm install -g firebase-tools');
+    console.log('');
+    throw new Error('Prerequisites not met');
+  }
+
+  console.log('✅ All prerequisites met');
+  console.log('');
+}
+
 async function setup() {
   console.log('🚀 Starting Idea Playground setup...');
   console.log('📱 This will set up the entire development environment');
   console.log('');
 
   try {
+    // 0. Check prerequisites
+    checkPrerequisites();
     // 1. Install root dependencies
     runCommand('npm install', 'Installing root dependencies');
 

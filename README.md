@@ -245,7 +245,7 @@ npm run deploy:hosting   # Deploy Frontend only
 
 ### **Production URLs**
 - **Website**: https://idea-playground-1f730.web.app
-- **Backend API**: https://your-cloud-run-url.run.app (deployed via Cloud Run)
+- **Backend API**: https://idea-playground-backend-1038191785150.us-central1.run.app
 
 ---
 

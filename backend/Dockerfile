@@ -5,11 +5,11 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy backend package files
-COPY backend/package*.json ./
+COPY package*.json ./
 RUN npm ci --only=production
 
 # Copy backend source code
-COPY backend/dist ./dist
+COPY dist ./dist
 
 # Set environment variables
 ENV NODE_ENV=production
