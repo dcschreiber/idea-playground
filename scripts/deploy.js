@@ -191,9 +191,8 @@ function checkDeploymentPrerequisites() {
   }
 
   try {
-    const firebaseAuth = execSync('firebase projects:list --format=json', { encoding: 'utf8', stdio: 'pipe' });
-    const projects = JSON.parse(firebaseAuth);
-    if (projects.length > 0) {
+    const firebaseAuth = execSync('firebase projects:list', { encoding: 'utf8', stdio: 'pipe' });
+    if (firebaseAuth.includes('Project Display Name') && firebaseAuth.includes('Project ID')) {
       console.log('✅ Firebase: Authenticated');
     } else {
       console.log('❌ Firebase: Not authenticated or no projects');
