@@ -191,7 +191,7 @@ function checkDeploymentPrerequisites() {
   }
 
   try {
-    const firebaseAuth = execSync('firebase list --json', { encoding: 'utf8', stdio: 'pipe' });
+    const firebaseAuth = execSync('firebase projects:list --format=json', { encoding: 'utf8', stdio: 'pipe' });
     const projects = JSON.parse(firebaseAuth);
     if (projects.length > 0) {
       console.log('✅ Firebase: Authenticated');
