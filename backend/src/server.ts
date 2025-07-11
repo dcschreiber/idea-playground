@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
-import { config } from './config/index.js';
-import { initializeFirestore } from './services/firestore.js';
-import { ideasRouter } from './routes/ideas.js';
-import { dimensionsRouter } from './routes/dimensions.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import { requestLogger } from './middleware/requestLogger.js';
+import { config } from './config';
+import { initializeFirestore } from './services/firestore';
+import { ideasRouter } from './routes/ideas';
+import { dimensionsRouter } from './routes/dimensions';
+import { errorHandler } from './middleware/errorHandler';
+import { requestLogger } from './middleware/requestLogger';
 
 const app = express();
 
@@ -29,9 +29,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logging
 app.use(requestLogger);
 
-// Initialize Firestore
-await initializeFirestore();
-
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
@@ -48,20 +45,36 @@ app.use('/api/dimensions', dimensionsRouter);
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Start server
-const server = app.listen(config.port, () => {
-  console.log(`🚀 Server running on port ${config.port}`);
-  console.log(`📱 Environment: ${config.environment}`);
-  console.log(`🔥 Firestore: ${config.firestore.emulator ? 'Emulator' : 'Production'}`);
-});
+// Start server function
+async function startServer() {
+  try {
+    // Initialize Firestore
+    await initializeFirestore();
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('📴 Server closed');
-    process.exit(0);
-  });
-});
+    // Start server
+    const server = app.listen(config.port, () => {
+      console.log(`🚀 Server running on port ${config.port}`);
+      console.log(`📱 Environment: ${config.environment}`);
+      console.log(`🔥 Firestore: ${config.firestore.emulator ? 'Emulator' : 'Production'}`);
+    });
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('🛑 SIGTERM received, shutting down gracefully');
+      server.close(() => {
+        console.log('📴 Server closed');
+        process.exit(0);
+      });
+    });
+
+    return server;
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();
 
 export default app; 

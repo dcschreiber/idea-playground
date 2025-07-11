@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { getFirestoreDb } from '../services/firestore.js';
-import { asyncHandler } from '../middleware/errorHandler.js';
-import { DimensionsRegistry } from '../types/index.js';
+import { getFirestoreDb } from '../services/firestore';
+import { asyncHandler } from '../middleware/errorHandler';
+import { DimensionsRegistry } from '../types';
 
 const router = Router();
 

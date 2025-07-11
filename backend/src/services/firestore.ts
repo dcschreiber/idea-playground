@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { config } from '../config/index.js';
+import { config } from '../config';
 
 let db: FirebaseFirestore.Firestore | null = null;
 

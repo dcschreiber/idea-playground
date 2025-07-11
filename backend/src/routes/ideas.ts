@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getFirestoreDb } from '../services/firestore.js';
-import { asyncHandler, createApiError } from '../middleware/errorHandler.js';
-import { Idea, ReorderRequest, ValidationResponse } from '../types/index.js';
+import { getFirestoreDb } from '../services/firestore';
+import { asyncHandler, createApiError } from '../middleware/errorHandler';
+import { Idea, ReorderRequest, ValidationResponse } from '../types';
 
 const router = Router();
 
