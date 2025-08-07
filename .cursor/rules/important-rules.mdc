@@ -8,4 +8,5 @@ alwaysApply: true
 - Where possible, use existing popular libraries
 - If you are unsure about any detail, stop and ask me
 - Commit every time you reach a stable working version with all tests passing
+- Keep regression e2e tests up to date, adding to them as you go
 - Comment a lot with an emphasis on the why. Always have docstings
