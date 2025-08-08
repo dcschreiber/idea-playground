@@ -295,14 +295,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     };
   }, [title, content, dimensions, autoSave, loading, isCreatingNew, newIdeaPhase]);
 
-  // Keep editor in sync when markdown content changes externally
-  useEffect(() => {
-    const html = mdToHtml(content);
-    if (editor && editor.getHTML() !== html) {
-      editor.commands.setContent(html, { emitUpdate: false });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content]);
+  // Note: We avoid syncing editor from markdown on every change to prevent feedback loops.
 
 
 
@@ -564,8 +557,12 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                     editor={editor}
                   />
                 </div>
-                <div className={clsx("px-4 pb-4", "prose prose-sm max-w-none")}
-                     style={{ height: isFullscreen ? undefined : undefined }}>
+                <div
+                  className={clsx("px-4 pb-4", "tiptap max-w-none min-h-[12rem] cursor-text")}
+                  onClick={() => editor?.chain().focus().run()}
+                  role="region"
+                  aria-label="Rich text editor"
+                >
                   <EditorContent editor={editor} />
                 </div>
               </div>
@@ -761,6 +758,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
         "text-sm px-2 py-1 mr-1 rounded border",
         active ? "bg-blue-50 border-blue-300 text-blue-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
       )}
+      data-active={active ? 'true' : 'false'}
+      data-testid={`toolbar-${label.toLowerCase()}`}
     >
       {label}
     </button>

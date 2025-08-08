@@ -4,7 +4,7 @@ import { IdeaCard } from './IdeaCard';
 import { dataService } from '../services/dataService';
 import {
   DndContext,
-  closestCenter,
+  closestCorners,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -13,6 +13,7 @@ import {
   DragStartEvent,
   DragOverlay,
   DragOverEvent,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -112,6 +113,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
   columnKey, 
   isDropTarget = false 
 }) => {
+  const { setNodeRef } = useDroppable({ id: columnKey });
   return (
     <div 
       className={clsx(
@@ -132,8 +134,8 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
         </div>
       </div>
       
-      <SortableContext items={ideas.map(([id]) => id)} strategy={verticalListSortingStrategy}>
-        <div className={clsx(
+      <SortableContext id={columnKey} items={ideas.map(([id]) => id)} strategy={verticalListSortingStrategy}>
+        <div ref={setNodeRef} className={clsx(
           "space-y-3 min-h-40 rounded-lg transition-all duration-200",
           isDropTarget && "bg-blue-100/50 border-dashed border-2 border-blue-300 p-2"
         )}>
@@ -251,31 +253,26 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-    
     if (!over) {
       setDragOverColumn(null);
       return;
     }
 
-    // Determine which column we're over
     let overColumn: string | null = null;
-    
-    // Check if we're over another idea card
-    if (over.id !== active.id) {
-      for (const [columnKey, items] of Object.entries(groupedIdeas)) {
-        if (items.find(([id]) => id === over.id)) {
-          overColumn = columnKey;
-          break;
-        }
+
+    // If hovering over a card, find its column
+    for (const [columnKey, items] of Object.entries(groupedIdeas)) {
+      if (items.find(([id]) => id === over.id)) {
+        overColumn = columnKey;
+        break;
       }
     }
-    
-    // If not over a card, check if we're over a column directly
-    if (!overColumn) {
-      const overElement = document.elementFromPoint(event.delta.x, event.delta.y);
-      const columnElement = overElement?.closest('[data-column]');
-      if (columnElement) {
-        overColumn = columnElement.getAttribute('data-column');
+
+    // Otherwise, if hovering over a column droppable area
+    if (!overColumn && typeof over.id === 'string') {
+      const columnMatch = columns.find(col => col.key === over.id);
+      if (columnMatch) {
+        overColumn = columnMatch.key;
       }
     }
 
@@ -284,7 +281,6 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
     setDragOverColumn(null);
 
     if (!over) {
@@ -292,66 +288,61 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
       return;
     }
 
-    if (active.id !== over.id) {
-      // Find source and target columns
-      const activeColumn = Object.entries(groupedIdeas).find(([, items]) =>
-        items.find(([id]) => id === active.id)
-      );
-      
-      const overColumn = Object.entries(groupedIdeas).find(([, items]) =>
-        items.find(([id]) => id === over.id)
-      );
+    // Identify source column
+    const activeColumnEntry = Object.entries(groupedIdeas).find(([, items]) =>
+      items.find(([id]) => id === active.id)
+    );
 
-      if (activeColumn && overColumn) {
-        const [activeColumnKey, activeItems] = activeColumn;
-        const [overColumnKey] = overColumn;
+    // Identify target column
+    let targetColumnKey: string | null = null;
 
-        if (activeColumnKey === overColumnKey) {
-          // Reordering within the same column
-          const oldIndex = activeItems.findIndex(([id]) => id === active.id);
-          const newIndex = activeItems.findIndex(([id]) => id === over.id);
+    // If dropping over a card, get that card's column
+    for (const [columnKey, items] of Object.entries(groupedIdeas)) {
+      if (items.find(([id]) => id === over.id)) {
+        targetColumnKey = columnKey;
+        break;
+      }
+    }
 
-          if (oldIndex !== newIndex) {
-            const newOrder = [...activeItems];
-            const [movedItem] = newOrder.splice(oldIndex, 1);
-            newOrder.splice(newIndex, 0, movedItem);
-            
-            onReorder(newOrder.map(([id]) => id));
-          }
-        } else {
-          // Moving between columns - update readiness level
-          const sourceColumn = columns.find(col => col.key === activeColumnKey);
-          const targetColumn = columns.find(col => col.key === overColumnKey);
-          
-          if (sourceColumn && targetColumn) {
-            const activeIdea = ideas[active.id as string];
-            if (activeIdea) {
-              // Update the idea's readiness to match the target column
-              const newReadiness = targetColumn.minReadiness;
-              onIdeaUpdate(active.id as string, {
-                dimensions: {
-                  ...activeIdea.dimensions,
-                  readiness: newReadiness,
-                },
-              });
-            }
-          }
+    // If dropping over a column droppable area
+    if (!targetColumnKey && typeof over.id === 'string') {
+      const match = columns.find(col => col.key === over.id);
+      if (match) {
+        targetColumnKey = match.key;
+      }
+    }
+
+    if (!activeColumnEntry || !targetColumnKey) {
+      setActiveId(null);
+      return;
+    }
+
+    const [activeColumnKey, activeItems] = activeColumnEntry;
+
+    if (activeColumnKey === targetColumnKey) {
+      // Reorder within same column if dropping over a card
+      if (active.id !== over.id) {
+        const oldIndex = activeItems.findIndex(([id]) => id === active.id);
+        const newIndex = activeItems.findIndex(([id]) => id === over.id);
+        if (newIndex !== -1 && oldIndex !== newIndex) {
+          const newOrder = [...activeItems];
+          const [movedItem] = newOrder.splice(oldIndex, 1);
+          newOrder.splice(newIndex, 0, movedItem);
+          onReorder(newOrder.map(([id]) => id));
         }
-      } else if (dragOverColumn) {
-        // Dropping directly on a column (not over an existing card)
-        const targetColumn = columns.find(col => col.key === dragOverColumn);
-        if (targetColumn) {
-          const activeIdea = ideas[active.id as string];
-          if (activeIdea) {
-            const newReadiness = targetColumn.minReadiness;
-            onIdeaUpdate(active.id as string, {
-              dimensions: {
-                ...activeIdea.dimensions,
-                readiness: newReadiness,
-              },
-            });
-          }
-        }
+      }
+    } else {
+      // Move across columns
+      const targetColumn = columns.find(col => col.key === targetColumnKey);
+      const activeIdea = ideas[active.id as string];
+      if (targetColumn && activeIdea) {
+        const newReadiness = targetColumn.minReadiness;
+        onIdeaUpdate(active.id as string, {
+          dimensions: {
+            ...activeIdea.dimensions,
+            readiness: newReadiness,
+          },
+        });
       }
     }
 
@@ -382,7 +373,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={closestCorners}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
