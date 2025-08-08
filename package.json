@@ -18,6 +18,7 @@
     "test:ui": "playwright test --ui",
     "migrate:emulator": "node scripts/migrate-emulator-data.js",
     "backup": "node scripts/backup-db.js",
+    "migrate:content-json": "ts-node --transpile-only scripts/migrate-content-to-json.ts",
     "deploy": "node scripts/deploy.js",
     "deploy:hosting": "npm run build:frontend && firebase deploy --only hosting",
     "serve": "firebase emulators:start --only firestore"

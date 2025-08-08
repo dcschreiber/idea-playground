@@ -1,6 +1,7 @@
 export interface Idea {
   title: string;
   content: string;
+  content_json?: any; // TipTap/ProseMirror JSON document (new)
   dimensions: {
     field: string;
     readiness: number;

@@ -25,8 +25,8 @@ router.post('/', asyncHandler(async (req, res) => {
   const db = getFirestoreDb();
   const ideaData = req.body as Idea;
   
-  // Validate required fields
-  if (!ideaData.title || !ideaData.content) {
+  // Validate required fields (content OR content_json acceptable during migration)
+  if (!ideaData.title || (!ideaData.content && !('content_json' in ideaData))) {
     throw createApiError('Title and content are required', 400);
   }
   

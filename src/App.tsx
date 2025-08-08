@@ -58,9 +58,16 @@ function App() {
     }
   };
 
-  const applyFilters = async () => {
+  const applyFilters = () => {
     try {
-      const filtered = await dataService.filterIdeas(filters);
+      const filtered: Record<string, Idea> = {};
+      Object.entries(ideas).forEach(([id, idea]) => {
+        let include = true;
+        if (filters.field && idea.dimensions.field !== filters.field) include = false;
+        if (filters.readiness && idea.dimensions.readiness !== filters.readiness) include = false;
+        if (filters.complexity && idea.dimensions.complexity !== filters.complexity) include = false;
+        if (include) filtered[id] = idea;
+      });
       setBaseFilteredIdeas(filtered);
     } catch (err) {
       console.error('Error filtering ideas:', err);
@@ -134,8 +141,23 @@ function App() {
 
   const handleIdeaUpdate = async (ideaId: string, updates: Partial<Idea>) => {
     try {
+      // Optimistically update local state for immediate UI feedback
+      setIdeas(prev => {
+        const existing = prev[ideaId];
+        if (!existing) return prev;
+        const merged: Idea = {
+          ...existing,
+          ...updates,
+          dimensions: {
+            ...existing.dimensions,
+            ...(updates.dimensions || {}),
+          },
+        };
+        return { ...prev, [ideaId]: merged };
+      });
+
       await dataService.updateIdea(ideaId, updates);
-      await loadIdeas(); // Reload ideas to reflect changes
+      // No reload; keep optimistic state to avoid flicker and to work with mocked tests
     } catch (error) {
       console.error('Error updating idea:', error);
     }

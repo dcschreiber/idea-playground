@@ -337,6 +337,32 @@ test.describe('Idea Playground', () => {
     await expect(page.locator('[data-testid="idea-card"]').first()).toBeEnabled();
   });
 
+  test('supports moving a card into an empty column', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="kanban-board"]');
+    await page.waitForTimeout(500);
+
+    // Verify 9-10 column starts empty
+    await expect(page.locator('[data-testid="kanban-column-9-10"] [data-testid="idea-card"]')).toHaveCount(0);
+
+    // Drag first card from 7-8 into 9-10 empty column droppable
+    const sourceCard = page.locator('[data-testid="kanban-column-7-8"] [data-testid="idea-card"]').first();
+    const targetColumn = page.locator('[data-testid="kanban-column-9-10"]');
+
+    const sourceBox = await sourceCard.boundingBox();
+    const targetBox = await targetColumn.boundingBox();
+    if (!sourceBox || !targetBox) throw new Error('Unable to measure drag targets');
+
+    await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 10 });
+    await page.waitForTimeout(200);
+    await page.mouse.up();
+
+    // The item should appear in the 9-10 column after move
+    await expect(page.locator('[data-testid="kanban-column-9-10"] [data-testid="idea-card"]')).toHaveCount(1, { timeout: 5000 });
+  });
+
   test('should delete idea with confirmation', async ({ page }) => {
     await page.goto('/');
     
