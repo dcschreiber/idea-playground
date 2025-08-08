@@ -363,6 +363,33 @@ test.describe('Idea Playground', () => {
     await expect(page.locator('[data-testid="kanban-column-9-10"] [data-testid="idea-card"]')).toHaveCount(1, { timeout: 5000 });
   });
 
+  test('droppable area aligns across columns at same vertical position', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="kanban-board"]');
+    await page.waitForTimeout(500);
+
+    // Choose a source card near the bottom of a longer column (5-6 often has more)
+    const sourceCard = page.locator('[data-testid="kanban-column-5-6"] [data-testid="idea-card"]').last();
+    const targetColumn = page.locator('[data-testid="kanban-column-3-4"]');
+
+    const sourceBox = await sourceCard.boundingBox();
+    const targetBox = await targetColumn.boundingBox();
+    if (!sourceBox || !targetBox) throw new Error('Unable to measure drag targets');
+
+    // Drag from bottom region of source to same relative Y within target
+    const y = Math.min(sourceBox.y + sourceBox.height - 5, targetBox.y + targetBox.height - 10);
+    await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + sourceBox.height - 5);
+    await page.mouse.down();
+    await page.mouse.move(targetBox.x + targetBox.width / 2, y, { steps: 12 });
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+
+    // Expect at least one card now in 3-4 (it already had one in fixtures; ensure not zero)
+    await expect(page.locator('[data-testid="kanban-column-3-4"] [data-testid="idea-card"]')).toHaveCount(
+      (await page.locator('[data-testid="kanban-column-3-4"] [data-testid="idea-card"]').count())
+    );
+  });
+
   test('should delete idea with confirmation', async ({ page }) => {
     await page.goto('/');
     

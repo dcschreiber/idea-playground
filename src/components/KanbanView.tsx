@@ -117,7 +117,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
   return (
     <div 
       className={clsx(
-        "rounded-lg p-4 min-h-96 transition-all duration-200 border-2",
+        "rounded-lg p-4 min-h-96 transition-all duration-200 border-2 flex flex-col h-full w-full",
         isDropTarget 
           ? "bg-blue-50 border-blue-300 border-dashed" 
           : "bg-gray-50 border-transparent"
@@ -136,7 +136,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
       
       <SortableContext id={columnKey} items={ideas.map(([id]) => id)} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className={clsx(
-          "space-y-3 min-h-40 rounded-lg transition-all duration-200",
+          "space-y-3 min-h-40 rounded-lg transition-all duration-200 flex-1 min-h-full",
           isDropTarget && "bg-blue-100/50 border-dashed border-2 border-blue-300 p-2"
         )}>
           {ideas.length === 0 && isDropTarget && (
@@ -380,11 +380,11 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
     >
       <div className="overflow-x-auto">
         <div 
-          className="flex space-x-6 min-w-max pb-6"
+          className="flex items-stretch space-x-6 min-w-max pb-6"
           data-testid="kanban-board"
         >
           {columns.map((column) => (
-            <div key={column.key} className="w-80 flex-shrink-0" data-testid="kanban-column">
+            <div key={column.key} className="w-80 flex-shrink-0 flex" data-testid="kanban-column">
               <KanbanColumn
                 title={column.title}
                 range={column.range}

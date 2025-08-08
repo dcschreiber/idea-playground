@@ -160,19 +160,36 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
           setTitle(idea.title);
           setContent(idea.content);
           setDimensions(idea.dimensions);
-          // Sync editor with loaded content
-          setTimeout(() => {
-            const html = mdToHtml(idea.content);
-            if (editor && editor.getHTML() !== html) {
-              editor.commands.setContent(html, { emitUpdate: false });
-            }
-          }, 0);
-          // Store initial data for comparison
-          initialDataRef.current = {
-            title: idea.title,
-            content: idea.content,
-            dimensions: idea.dimensions,
-          };
+          const maybeJson: any = (idea as any).content_json;
+          if (maybeJson) {
+            setTimeout(() => {
+              if (!editor) return;
+              editor.commands.setContent(maybeJson, { emitUpdate: false });
+              const htmlFromJson = editor.getHTML();
+              try {
+                const mdFromJson = turndownRef.current.turndown(htmlFromJson);
+                setContent(mdFromJson);
+              } catch {}
+              initialDataRef.current = {
+                title: idea.title,
+                content: editor ? turndownRef.current.turndown(htmlFromJson) : idea.content,
+                dimensions: idea.dimensions,
+              };
+            }, 0);
+          } else {
+            // Fallback to legacy markdown
+            setTimeout(() => {
+              const html = mdToHtml(idea.content);
+              if (editor && editor.getHTML() !== html) {
+                editor.commands.setContent(html, { emitUpdate: false });
+              }
+              initialDataRef.current = {
+                title: idea.title,
+                content: idea.content,
+                dimensions: idea.dimensions,
+              };
+            }, 0);
+          }
         }
       } else if (isCreatingNew) {
         // Reset for new idea
@@ -236,6 +253,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
       const idea: Idea = {
         title: title.trim(),
         content,
+        content_json: editor ? editor.getJSON() : undefined,
         dimensions,
         sub_ideas: [],
         order: 0, // Will be set by the parent component

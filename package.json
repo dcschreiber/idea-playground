@@ -18,7 +18,7 @@
     "test:ui": "playwright test --ui",
     "migrate:emulator": "node scripts/migrate-emulator-data.js",
     "backup": "node scripts/backup-db.js",
-    "migrate:content-json": "ts-node --transpile-only scripts/migrate-content-to-json.ts",
+    "migrate:content-json": "node scripts/migrate-content-to-json.js",
     "deploy": "node scripts/deploy.js",
     "deploy:hosting": "npm run build:frontend && firebase deploy --only hosting",
     "serve": "firebase emulators:start --only firestore"
@@ -28,6 +28,7 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
+    "@tiptap/html": "^3.0.9",
     "@tiptap/react": "^3.0.9",
     "@tiptap/starter-kit": "^3.0.9",
     "@uiw/react-markdown-editor": "^6.1.4",

@@ -1,6 +1,7 @@
 export interface Idea {
   title: string;
   content: string;
+  content_json?: any;
   dimensions: Dimensions;
   sub_ideas: string[];
   order: number;
