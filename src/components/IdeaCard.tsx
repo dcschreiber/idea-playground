@@ -42,8 +42,37 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
     return content.substring(0, maxLength).trim() + '...';
   };
 
+  // Extract plain text from TipTap JSON
+  const extractPlainTextFromJson = (json: any): string => {
+    if (!json) return '';
+    const parts: string[] = [];
+    const walk = (node: any) => {
+      if (!node) return;
+      if (Array.isArray(node)) {
+        node.forEach(walk);
+        return;
+      }
+      if (node.type === 'text' && node.text) {
+        parts.push(node.text);
+        return;
+      }
+      if (node.content) {
+        node.content.forEach(walk);
+        if (node.type === 'paragraph' || node.type === 'heading') {
+          parts.push('\n');
+        }
+      }
+    };
+    walk(json);
+    return parts.join(' ').replace(/\s+/g, ' ').trim();
+  };
+
   // Extract the first line or paragraph for preview
-  const getContentPreview = (content: string): string => {
+  const getContentPreview = (content: string, contentJson?: any): string => {
+    if (contentJson) {
+      const text = extractPlainTextFromJson(contentJson);
+      return truncateContent(text);
+    }
     // Remove markdown headers and get first meaningful content
     const cleaned = content
       .replace(/^#{1,6}\s+.*$/gm, '') // Remove headers
@@ -86,7 +115,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
       {/* Content Preview */}
       <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-        {getContentPreview(idea.content)}
+        {getContentPreview(idea.content, (idea as any).content_json)}
       </p>
 
       {/* Dimensions */}

@@ -3,8 +3,6 @@ import { Dialog } from '@headlessui/react';
 import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, CheckIcon, TrashIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { marked } from 'marked';
-import TurndownService from 'turndown';
 import { Idea, Dimensions } from '../types';
 import { dataService } from '../services/dataService';
 import clsx from 'clsx';
@@ -50,20 +48,15 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   // Single-mode editing with live preview
   const [fieldValues, setFieldValues] = useState<string[]>([]);
   const [allIdeas, setAllIdeas] = useState<Record<string, Idea>>({});
-  const turndownRef = useRef(new TurndownService());
+  const [contentJson, setContentJson] = useState<any>(null);
 
   // TipTap editor instance (classic rich-text experience with single mode)
   const editor = useEditor({
     extensions: [StarterKit],
-    content: mdToHtml(content),
     onUpdate: ({ editor }) => {
-      try {
-        const html = editor.getHTML();
-        const md = turndownRef.current.turndown(html);
-        setContent(md);
-      } catch {
-        // ignore conversion errors; leave content as-is
-      }
+      const json = editor.getJSON();
+      setContentJson(json);
+      setContent(extractPlainTextFromJson(json));
     },
   });
   
@@ -165,27 +158,26 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
             setTimeout(() => {
               if (!editor) return;
               editor.commands.setContent(maybeJson, { emitUpdate: false });
-              const htmlFromJson = editor.getHTML();
-              try {
-                const mdFromJson = turndownRef.current.turndown(htmlFromJson);
-                setContent(mdFromJson);
-              } catch {}
+              setContentJson(maybeJson);
+              setContent(extractPlainTextFromJson(maybeJson));
               initialDataRef.current = {
                 title: idea.title,
-                content: editor ? turndownRef.current.turndown(htmlFromJson) : idea.content,
+                content: extractPlainTextFromJson(maybeJson),
                 dimensions: idea.dimensions,
               };
             }, 0);
           } else {
             // Fallback to legacy markdown
             setTimeout(() => {
-              const html = mdToHtml(idea.content);
-              if (editor && editor.getHTML() !== html) {
-                editor.commands.setContent(html, { emitUpdate: false });
-              }
+              const legacyText = idea.content || '';
+              const json = legacyText
+                ? { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: legacyText }] }] }
+                : { type: 'doc', content: [{ type: 'paragraph' }] };
+              if (editor) editor.commands.setContent(json, { emitUpdate: false });
+              setContentJson(json);
               initialDataRef.current = {
                 title: idea.title,
-                content: idea.content,
+                content: legacyText,
                 dimensions: idea.dimensions,
               };
             }, 0);
@@ -206,10 +198,12 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         setDimensions(defaultDimensions);
         // Reset editor content
         setTimeout(() => {
-          const html = mdToHtml('');
-          if (editor && editor.getHTML() !== html) {
-            editor.commands.setContent(html, { emitUpdate: false });
+          const emptyDoc: any = { type: 'doc', content: [{ type: 'paragraph' }] };
+          if (editor) {
+            editor.commands.setContent(emptyDoc, { emitUpdate: false });
           }
+          setContent('');
+          setContentJson(emptyDoc);
         }, 0);
       }
     } catch (err) {
@@ -223,18 +217,21 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     if (!titleValidation.isValid || !title.trim()) return;
     
     // Generate default content with the validated title
-    const defaultContent = `# ${title.trim()}\n\n## Core Concept\n\n`;
-    setContent(defaultContent);
-    // Initialize editor with default HTML derived from markdown
-    const html = mdToHtml(defaultContent);
-    if (editor) {
-      editor.commands.setContent(html, { emitUpdate: false });
-    }
+        const defaultDoc = {
+          type: 'doc',
+          content: [
+            { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: title.trim() }] },
+            { type: 'paragraph', content: [{ type: 'text', text: 'Core Concept' }] },
+          ],
+        } as any;
+        setContent(extractPlainTextFromJson(defaultDoc));
+        setContentJson(defaultDoc);
+        if (editor) editor.commands.setContent(defaultDoc, { emitUpdate: false });
     
     // Initialize reference for auto-save detection
     initialDataRef.current = {
       title: title.trim(),
-      content: defaultContent,
+      content: extractPlainTextFromJson(defaultDoc),
       dimensions,
     };
     
@@ -252,8 +249,8 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
       setSaving(true);
       const idea: Idea = {
         title: title.trim(),
-        content,
-        content_json: editor ? editor.getJSON() : undefined,
+        content, // kept temporarily for preview/backward compatibility
+        content_json: contentJson ?? (editor ? editor.getJSON() : undefined),
         dimensions,
         sub_ideas: [],
         order: 0, // Will be set by the parent component
@@ -755,13 +752,29 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   );
 }; 
 
-// Convert Markdown <-> HTML helpers
-const mdToHtml = (markdown: string): string => {
-  try {
-    return marked.parse(markdown ?? '', { breaks: true }) as string;
-  } catch {
-    return markdown || '';
-  }
+// Plain text extractor from TipTap JSON for lightweight previews and change detection
+const extractPlainTextFromJson = (json: any): string => {
+  if (!json) return '';
+  const parts: string[] = [];
+  const walk = (node: any) => {
+    if (!node) return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (node.type === 'text' && node.text) {
+      parts.push(node.text);
+      return;
+    }
+    if (node.content) {
+      node.content.forEach(walk);
+      if (node.type === 'paragraph' || node.type === 'heading') {
+        parts.push('\n');
+      }
+    }
+  };
+  walk(json);
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
 };
 
 // Toolbar component for a simple classic rich-text UI

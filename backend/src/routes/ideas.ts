@@ -25,9 +25,9 @@ router.post('/', asyncHandler(async (req, res) => {
   const db = getFirestoreDb();
   const ideaData = req.body as Idea;
   
-  // Validate required fields (content OR content_json acceptable during migration)
-  if (!ideaData.title || (!ideaData.content && !('content_json' in ideaData))) {
-    throw createApiError('Title and content are required', 400);
+  // Validate required fields (content_json is now required)
+  if (!ideaData.title || !('content_json' in ideaData)) {
+    throw createApiError('Title and content_json are required', 400);
   }
   
   // Validate title uniqueness
@@ -87,11 +87,16 @@ router.put('/:id', asyncHandler(async (req, res) => {
     }
   }
 
+  // Enforce content_json presence if content is being changed or not provided
+  if ('content' in updateData && !('content_json' in updateData)) {
+    throw createApiError('Updating content requires content_json', 400);
+  }
+
   // Update with timestamp
   const updatedIdea = {
     ...updateData,
     updatedAt: FieldValue.serverTimestamp()
-  };
+  } as Partial<Idea>;
 
   await db.collection('ideas').doc(ideaId).update(updatedIdea);
   res.json({ id: ideaId, ...updatedIdea });

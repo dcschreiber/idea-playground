@@ -1,7 +1,7 @@
 export interface Idea {
   title: string;
-  content: string;
-  content_json?: any; // TipTap/ProseMirror JSON document (new)
+  content?: string;
+  content_json: any; // TipTap/ProseMirror JSON document (canonical)
   dimensions: {
     field: string;
     readiness: number;

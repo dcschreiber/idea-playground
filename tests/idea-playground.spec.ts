@@ -763,8 +763,8 @@ test.describe('Idea Playground', () => {
       // The bug is that the parent component doesn't update its state, so when we close and reopen
       // the modal, it should remember that we're editing an existing idea, not creating a new one
       
-      // Close the modal
-      await page.keyboard.press('Escape');
+      // Close the modal deterministically via the Close button
+      await page.locator('button:has-text("Close")').click();
       await expect(page.locator('[data-testid="idea-modal"]')).not.toBeVisible();
       
       // Wait for state to settle

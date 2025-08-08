@@ -115,7 +115,7 @@ Idea Playground is a kanban-style React TypeScript application for managing and 
 - **Framework**: React 18 + TypeScript
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS
-- **Markdown Editor**: @uiw/react-markdown-editor
+- **Rich Text Editor**: TipTap (single-mode editing+view). Canonical storage is TipTap JSON in `content_json`.
 - **Drag & Drop**: @dnd-kit
 - **UI Components**: @headlessui/react
 - **Icons**: @heroicons/react
