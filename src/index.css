@@ -2,13 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles for markdown editor */
-.w-md-editor {
-  @apply bg-white;
-}
-
-.w-md-editor-text-container .w-md-editor-text {
-  @apply text-sm;
+/* Classic editor tweaks */
+[data-testid="richtext-toolbar"] button {
+  font-weight: 600;
 }
 
 /* Custom scrollbar styles */

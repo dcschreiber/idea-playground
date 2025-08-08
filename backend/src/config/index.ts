@@ -14,7 +14,7 @@ export const config = {
   firestore: {
     emulator: process.env.NODE_ENV !== 'production',
     emulatorHost: process.env.FIRESTORE_EMULATOR_HOST || 'localhost',
-    emulatorPort: parseInt(process.env.FIRESTORE_EMULATOR_PORT || '8080'),
+    emulatorPort: parseInt(process.env.FIRESTORE_EMULATOR_PORT || '8081'),
     projectId: process.env.FIREBASE_PROJECT_ID || 'idea-playground-1f730'
   },
   

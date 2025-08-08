@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
-import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, PencilIcon, EyeIcon, CheckIcon, TrashIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import MarkdownEditor from '@uiw/react-markdown-editor';
-import '@uiw/react-markdown-editor/markdown-editor.css';
-import '@uiw/react-markdown-preview/markdown.css';
+import { XMarkIcon, ArrowsPointingOutIcon, ArrowsPointingInIcon, CheckIcon, TrashIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { marked } from 'marked';
+import TurndownService from 'turndown';
 import { Idea, Dimensions } from '../types';
 import { dataService } from '../services/dataService';
 import clsx from 'clsx';
@@ -46,9 +47,25 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  // Single-mode editing with live preview
   const [fieldValues, setFieldValues] = useState<string[]>([]);
   const [allIdeas, setAllIdeas] = useState<Record<string, Idea>>({});
+  const turndownRef = useRef(new TurndownService());
+
+  // TipTap editor instance (classic rich-text experience with single mode)
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: mdToHtml(content),
+    onUpdate: ({ editor }) => {
+      try {
+        const html = editor.getHTML();
+        const md = turndownRef.current.turndown(html);
+        setContent(md);
+      } catch {
+        // ignore conversion errors; leave content as-is
+      }
+    },
+  });
   
   // New idea creation state
   const [newIdeaPhase, setNewIdeaPhase] = useState<NewIdeaPhase>('title-validation');
@@ -143,6 +160,13 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
           setTitle(idea.title);
           setContent(idea.content);
           setDimensions(idea.dimensions);
+          // Sync editor with loaded content
+          setTimeout(() => {
+            const html = mdToHtml(idea.content);
+            if (editor && editor.getHTML() !== html) {
+              editor.commands.setContent(html, { emitUpdate: false });
+            }
+          }, 0);
           // Store initial data for comparison
           initialDataRef.current = {
             title: idea.title,
@@ -163,6 +187,13 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
           potentially_connected_idea: null,
         };
         setDimensions(defaultDimensions);
+        // Reset editor content
+        setTimeout(() => {
+          const html = mdToHtml('');
+          if (editor && editor.getHTML() !== html) {
+            editor.commands.setContent(html, { emitUpdate: false });
+          }
+        }, 0);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -177,6 +208,11 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     // Generate default content with the validated title
     const defaultContent = `# ${title.trim()}\n\n## Core Concept\n\n`;
     setContent(defaultContent);
+    // Initialize editor with default HTML derived from markdown
+    const html = mdToHtml(defaultContent);
+    if (editor) {
+      editor.commands.setContent(html, { emitUpdate: false });
+    }
     
     // Initialize reference for auto-save detection
     initialDataRef.current = {
@@ -185,9 +221,8 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
       dimensions,
     };
     
-    // Switch to editing phase
+    // Switch to editing phase (single editor mode)
     setNewIdeaPhase('editing');
-    setIsEditMode(true);
   };
 
   // Auto-save function with debouncing (only for editing phase)
@@ -260,6 +295,15 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     };
   }, [title, content, dimensions, autoSave, loading, isCreatingNew, newIdeaPhase]);
 
+  // Keep editor in sync when markdown content changes externally
+  useEffect(() => {
+    const html = mdToHtml(content);
+    if (editor && editor.getHTML() !== html) {
+      editor.commands.setContent(html, { emitUpdate: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content]);
+
 
 
   const handleDimensionChange = (key: keyof Dimensions, value: any) => {
@@ -277,8 +321,50 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     }
   };
 
-  const toggleEditMode = () => {
-    setIsEditMode(!isEditMode);
+  // Track latest state for flush on close/unmount
+  const latestStateRef = useRef({
+    title: '',
+    content: '',
+    dimensions: dimensions as Dimensions,
+    hasUnsavedChanges: false,
+  });
+
+  useEffect(() => {
+    latestStateRef.current = {
+      title,
+      content,
+      dimensions,
+      hasUnsavedChanges,
+    };
+  }, [title, content, dimensions, hasUnsavedChanges]);
+
+  const flushAutoSave = useCallback(async () => {
+    // Clear any pending debounce
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+      autoSaveTimeoutRef.current = null;
+    }
+    if (latestStateRef.current.hasUnsavedChanges && latestStateRef.current.title.trim()) {
+      await autoSave();
+    }
+  }, [autoSave]);
+
+  // Save on unmount even if dialog closes
+  useEffect(() => {
+    return () => {
+      if (latestStateRef.current.hasUnsavedChanges && latestStateRef.current.title.trim()) {
+        if (autoSaveTimeoutRef.current) {
+          clearTimeout(autoSaveTimeoutRef.current);
+          autoSaveTimeoutRef.current = null;
+        }
+        void autoSave();
+      }
+    };
+  }, [autoSave]);
+
+  const handleDialogClose = async () => {
+    await flushAutoSave();
+    onClose();
   };
 
   const handleDelete = async () => {
@@ -416,7 +502,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     <Dialog 
       as="div" 
       className="fixed inset-0 z-50 flex items-center justify-center" 
-      onClose={onClose}
+      onClose={handleDialogClose}
       data-testid="idea-modal"
       open={true}
     >
@@ -428,33 +514,18 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
           isFullscreen && "h-full max-w-none max-h-none rounded-none"
         )} data-testid="editing-phase">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-200">
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter idea title..."
               data-testid="modal-title"
-              className="text-xl font-semibold text-gray-900 bg-transparent border-none outline-none flex-1 mr-4"
+              className="text-lg md:text-xl font-semibold text-gray-900 bg-transparent border-none outline-none flex-1 mr-2 md:mr-4"
               readOnly={isCreatingNew && newIdeaPhase === 'editing'} // Title is locked during editing phase for new ideas
             />
             
             <div className="flex items-center space-x-2">
-              {/* Edit/Preview Toggle */}
-              <button
-                onClick={toggleEditMode}
-                data-testid="edit-toggle"
-                className={clsx(
-                  "p-2 rounded-lg border transition-colors",
-                  isEditMode 
-                    ? "bg-blue-100 border-blue-300 text-blue-700"
-                    : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
-                )}
-                title={isEditMode ? "Switch to Preview" : "Switch to Edit"}
-              >
-                {isEditMode ? <EyeIcon className="h-5 w-5" /> : <PencilIcon className="h-5 w-5" />}
-              </button>
-
               {/* Fullscreen Toggle */}
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
@@ -469,7 +540,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
 
               {/* Close */}
               <button
-                onClick={onClose}
+                onClick={handleDialogClose}
                 className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                 title="Close"
               >
@@ -478,43 +549,30 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
             {/* Main Content */}
-            <div className="flex-1 p-6 overflow-y-auto">
-              {isEditMode ? (
-                <MarkdownEditor
-                  value={content}
-                  onChange={setContent}
-                  data-color-mode="light"
-                  data-testid="markdown-editor"
-                  className={clsx(
-                    "border border-gray-200 rounded-lg overflow-hidden",
-                    isFullscreen ? "h-[calc(100vh-8rem)]" : "h-96"
-                  )}
-                />
-              ) : (
-                <div 
-                  className={clsx(
-                    "border border-gray-200 rounded-lg p-6 overflow-y-auto bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors",
-                    isFullscreen ? "h-[calc(100vh-8rem)]" : "h-96"
-                  )}
-                  onClick={() => setIsEditMode(true)}
-                  data-testid="markdown-preview"
-                >
-                  <div className="prose prose-sm max-w-none">
-                    <MarkdownEditor.Markdown source={content} />
-                  </div>
-                  {!content.trim() && (
-                    <div className="text-gray-400 italic">
-                      Click here to start writing your idea...
-                    </div>
-                  )}
+            <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4">
+              <div
+                data-testid="markdown-editor"
+                className={clsx(
+                  "border border-gray-200 rounded-lg overflow-auto",
+                  isFullscreen ? "h-[calc(100vh-8rem)]" : "h-72 md:h-96"
+                )}
+              >
+                <div className="p-3">
+                  <Toolbar
+                    editor={editor}
+                  />
                 </div>
-              )}
+                <div className={clsx("px-4 pb-4", "prose prose-sm max-w-none")}
+                     style={{ height: isFullscreen ? undefined : undefined }}>
+                  <EditorContent editor={editor} />
+                </div>
+              </div>
             </div>
 
             {/* Dimensions Form */}
-            <div className="w-80 border-l border-gray-200 p-6 overflow-y-auto bg-gray-50" data-testid="dimensions-form">
+            <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-gray-200 p-4 md:p-6 overflow-y-auto bg-gray-50" data-testid="dimensions-form">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Dimensions</h3>
               
               <div className="space-y-6">
@@ -663,7 +721,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                 </button>
               )}
               <button
-                onClick={onClose}
+                onClick={handleDialogClose}
                 disabled={deleting}
                 className={clsx(
                   "px-4 py-2 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
@@ -681,3 +739,42 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
     </Dialog>
   );
 }; 
+
+// Convert Markdown <-> HTML helpers
+const mdToHtml = (markdown: string): string => {
+  try {
+    return marked.parse(markdown ?? '', { breaks: true }) as string;
+  } catch {
+    return markdown || '';
+  }
+};
+
+// Toolbar component for a simple classic rich-text UI
+interface ToolbarProps { editor: ReturnType<typeof useEditor> | null }
+const Toolbar: React.FC<ToolbarProps> = ({ editor }) => {
+  if (!editor) return null;
+  const Button = ({ onClick, active, label }: { onClick: () => void; active?: boolean; label: string }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        "text-sm px-2 py-1 mr-1 rounded border",
+        active ? "bg-blue-50 border-blue-300 text-blue-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+      )}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div className="flex flex-wrap items-center" data-testid="richtext-toolbar">
+      <Button label="B" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} />
+      <Button label="I" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()} />
+      <Button label="H1" active={editor.isActive('heading', { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} />
+      <Button label="H2" active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
+      <Button label="Quote" active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
+      <Button label="Code" active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
+      <Button label="UL" active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} />
+      <Button label="OL" active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
+    </div>
+  );
+};

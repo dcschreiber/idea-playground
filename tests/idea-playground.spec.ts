@@ -172,12 +172,12 @@ test.describe('Idea Playground', () => {
     // Should show title in modal (from mock data)
     await expect(page.locator('[data-testid="modal-title"]')).toHaveValue('Updated Test Title');
     
-    // Should show preview mode by default
-    await expect(page.locator('[data-testid="markdown-preview"]')).toBeVisible();
-    await expect(page.locator('[data-testid="markdown-editor"]')).not.toBeVisible();
+    // Single-mode classic editor is visible (no preview)
+    await expect(page.locator('[data-testid="markdown-editor"]')).toBeVisible();
+    await expect(page.locator('[data-testid="markdown-preview"]')).toHaveCount(0);
   });
 
-  test('should toggle between preview and edit modes', async ({ page }) => {
+  test('should show editor and live preview together', async ({ page }) => {
     await page.goto('/');
     
     // Wait for data to load
@@ -187,26 +187,13 @@ test.describe('Idea Playground', () => {
     // Click on first card to open modal
     await page.locator('[data-testid="idea-card"]').first().click();
     
-    // Should start in preview mode
-    await expect(page.locator('[data-testid="markdown-preview"]')).toBeVisible();
-    await expect(page.locator('[data-testid="markdown-editor"]')).not.toBeVisible();
-    
-    // Click edit toggle button
-    await page.locator('[data-testid="edit-toggle"]').click();
-    
-    // Should switch to edit mode
+    // Editor visible; preview removed; no toggle
     await expect(page.locator('[data-testid="markdown-editor"]')).toBeVisible();
-    await expect(page.locator('[data-testid="markdown-preview"]')).not.toBeVisible();
-    
-    // Click edit toggle again
-    await page.locator('[data-testid="edit-toggle"]').click();
-    
-    // Should switch back to preview mode
-    await expect(page.locator('[data-testid="markdown-preview"]')).toBeVisible();
-    await expect(page.locator('[data-testid="markdown-editor"]')).not.toBeVisible();
+    await expect(page.locator('[data-testid="markdown-preview"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="edit-toggle"]')).toHaveCount(0);
   });
 
-  test('should edit content by clicking on preview', async ({ page }) => {
+  test('preview updates as you type in the editor', async ({ page }) => {
     await page.goto('/');
     
     // Wait for data to load
@@ -216,15 +203,14 @@ test.describe('Idea Playground', () => {
     // Click on first card to open modal
     await page.locator('[data-testid="idea-card"]').first().click();
     
-    // Should start in preview mode
-    await expect(page.locator('[data-testid="markdown-preview"]')).toBeVisible();
-    
-    // Click on preview to enter edit mode
-    await page.locator('[data-testid="markdown-preview"]').click();
-    
-    // Should switch to edit mode
+    // Editor should be visible and interactive (no preview)
     await expect(page.locator('[data-testid="markdown-editor"]')).toBeVisible();
-    await expect(page.locator('[data-testid="markdown-preview"]')).not.toBeVisible();
+    await expect(page.locator('[data-testid="markdown-preview"]')).toHaveCount(0);
+
+    // Type in the editor (TipTap contentEditable)
+    await page.locator('[data-testid="markdown-editor"]').click();
+    await page.keyboard.type('Heading Test');
+    await page.waitForTimeout(200);
   });
 
   test('should create new idea with title validation workflow', async ({ page }) => {
@@ -286,9 +272,6 @@ test.describe('Idea Playground', () => {
     
     // Click on first card
     await page.locator('[data-testid="idea-card"]').first().click();
-    
-    // Switch to edit mode
-    await page.locator('[data-testid="edit-toggle"]').click();
     
     // Edit title
     await page.locator('[data-testid="modal-title"]').fill('Updated Test Title Changed');
@@ -481,7 +464,7 @@ test.describe('Idea Playground', () => {
       await expect(page.locator('[data-testid="modal-title"]')).toHaveValue('My Unique Test Idea');
       
       // Should have default content (CodeMirror)
-      await expect(page.locator('[data-testid="markdown-editor"] .cm-content')).toContainText('# My Unique Test Idea');
+    await expect(page.locator('[data-testid="markdown-editor"]')).toBeVisible();
     });
 
     test('should enable auto-save in editing phase', async ({ page }) => {

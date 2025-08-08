@@ -6,21 +6,18 @@ let db: FirebaseFirestore.Firestore | null = null;
 
 export async function initializeFirestore(): Promise<void> {
   try {
-    // Initialize Firebase Admin
-    const app = initializeApp({
-      projectId: config.firestore.projectId
-    });
-
-    // Get Firestore instance
-    db = getFirestore(app);
-
-    // Configure emulator if in development
+    // Configure emulator env BEFORE creating Firestore instance
     if (config.firestore.emulator) {
-      console.log(`🔧 Using Firestore emulator at ${config.firestore.emulatorHost}:${config.firestore.emulatorPort}`);
-      
-      // Set emulator host for development
-      process.env.FIRESTORE_EMULATOR_HOST = `${config.firestore.emulatorHost}:${config.firestore.emulatorPort}`;
+      const emulatorAddress = `${config.firestore.emulatorHost}:${config.firestore.emulatorPort}`;
+      process.env.FIRESTORE_EMULATOR_HOST = emulatorAddress;
+      console.log(`🔧 Using Firestore emulator at ${emulatorAddress}`);
     }
+
+    // Initialize Firebase Admin
+    const app = initializeApp({ projectId: config.firestore.projectId });
+
+    // Get Firestore instance (now points to emulator in dev)
+    db = getFirestore(app);
 
     console.log('🔥 Firestore initialized successfully');
   } catch (error) {
