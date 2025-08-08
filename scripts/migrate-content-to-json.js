@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { marked } from 'marked';
-import { generateJSON } from '@tiptap/html';
+import { generateJSON } from '@tiptap/html/server';
 import StarterKit from '@tiptap/starter-kit';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 async function main() {
   const dryRun = process.env.DRY_RUN === '1' || process.env.DRY_RUN === 'true';
-  const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'idea-playground';
+  const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'idea-playground-1f730';
   initializeApp({ projectId });
   const db = getFirestore();
 
