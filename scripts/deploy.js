@@ -24,15 +24,15 @@ function runCommand(command, description, options = {}) {
 }
 
 function createDockerfile() {
-  const dockerfileContent = `# Use Node.js 18 Alpine
-FROM node:18-alpine
+  const dockerfileContent = `# Use Node.js 20 Alpine
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
 # Copy backend package files
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev --no-audit --no-fund
 
 # Copy backend source code
 COPY dist ./dist
@@ -111,11 +111,9 @@ spec:
 function updateFrontendApiUrl(cloudRunUrl) {
   const dataServicePath = join(PROJECT_ROOT, 'src', 'services', 'dataService.ts');
   let content = readFileSync(dataServicePath, 'utf8');
-  
-  content = content.replace(
-    'https://your-cloud-run-url.run.app',
-    cloudRunUrl
-  );
+  // Replace any existing production Cloud Run URL in the ternary with the new one
+  // Matches: ? 'https://<anything>.run.app'
+  content = content.replace(/\?\s*'https:\/\/[^']*\.run\.app'/, `? '${cloudRunUrl}'`);
   
   writeFileSync(dataServicePath, content);
   console.log(`✅ Frontend API URL updated to ${cloudRunUrl}`);
@@ -240,7 +238,7 @@ async function deploy() {
 
     // 3. Build and push Docker image
     runCommand(
-      `cd backend && docker build --platform linux/amd64 -t gcr.io/${PROJECT_ID}/${SERVICE_NAME} .`,
+      `cd backend && docker build -t gcr.io/${PROJECT_ID}/${SERVICE_NAME} .`,
       'Building Docker image'
     );
     
