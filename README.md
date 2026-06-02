@@ -1,5 +1,15 @@
 # 🚀 Idea Playground
 
+> ## ⚠️ DEPRECATED — superseded by [shryber](https://github.com/dcschreiber/shryber)
+>
+> This project is no longer maintained. On **2026-06-02** the Ideas feature was
+> folded into the **shryber** monorepo (migration `add_idea_playground` plus a
+> full data export), where it now ships across **backend, web, iOS, and Android**.
+>
+> - **Do not** make further changes here — make them in `shryber` instead.
+> - The standalone Ideas UI in shryber lives at `apps/web/src/components/ideas/`.
+> - This repo and its `master` branch are kept only as a historical reference.
+
 A multi-dimensional UI system for organizing and visualizing ideas with different perspectives and relationships.
 
 ## 📋 **Project Overview**
