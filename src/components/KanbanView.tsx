@@ -252,7 +252,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ ideas, onIdeaClick, onRe
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
+    const { over } = event;
     if (!over) {
       setDragOverColumn(null);
       return;
