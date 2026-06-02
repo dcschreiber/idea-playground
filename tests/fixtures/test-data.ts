@@ -4,6 +4,7 @@ export const mockIdeas: Record<string, Idea> = {
   'human_ai_content_authentication': {
     title: 'Human-AI Content Authentication & Network Effects',
     content: '# Human-AI Content Authentication & Network Effects\n\n## Core Paper: "Statistical Human Verification Networks"\n\n### The Solution\n**One person, one account through statistical sampling**: Just as small random samples can represent large populations, a few random human verifications make maintaining fake accounts impractical.',
+    content_json: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Human-AI Content Authentication & Network Effects' }] }] },
     dimensions: {
       field: 'Network Security',
       readiness: 6,
@@ -19,6 +20,7 @@ export const mockIdeas: Record<string, Idea> = {
   'generic_model_library': {
     title: 'Generic Model Library',
     content: '# Generic Model Library\n\n## Core Concept\nLibrary that implements a generic model with:\n1. Input API - pull\n2. Output API - push\n3. Scoring function',
+    content_json: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Generic Model Library' }] }] },
     dimensions: {
       field: 'Software Architecture',
       readiness: 6,
@@ -34,6 +36,7 @@ export const mockIdeas: Record<string, Idea> = {
   'multi_dimensional_ui_system': {
     title: 'Updated Test Title',
     content: '# Multi-Dimensional UI System (Idea UI)\n\n## Core Concept\nA UI system to hold and display ideas in a structure like this document.\nEach edge has a dimension array with a short whitelist of keys.\nThen N UIs, each with a different display based on different dimension function.',
+    content_json: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Updated Test Title' }] }] },
     dimensions: {
       field: 'UI/UX Engineering',
       readiness: 1,
@@ -49,6 +52,7 @@ export const mockIdeas: Record<string, Idea> = {
   'educational_app_spaced_learning': {
     title: 'Educational App with Spaced Learning (ושיננתם)',
     content: '# Educational App with Spaced Learning (ושיננתם)\n\n## Core Concept\nEducational app for learning texts by heart (ושיננתם - "and you shall teach them diligently").\nThe chunk size of text the app teaches is variable and adjusts to adapt to the student.\nUses spaced repetition principles.',
+    content_json: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Educational App with Spaced Learning' }] }] },
     dimensions: {
       field: 'EdTech',
       readiness: 4,
@@ -61,6 +65,7 @@ export const mockIdeas: Record<string, Idea> = {
   'playwright_repository_split': {
     title: 'Playwright Repository Split',
     content: '# Playwright Repository Split\n\n## Core Concept\nSplit the playwright roll into a new repo.',
+    content_json: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Playwright Repository Split' }] }] },
     dimensions: {
       field: 'DevOps',
       readiness: 8,

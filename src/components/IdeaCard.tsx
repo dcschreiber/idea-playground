@@ -115,7 +115,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
       {/* Content Preview */}
       <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-        {getContentPreview(idea.content, (idea as any).content_json)}
+        {getContentPreview(idea.content ?? '', (idea as any).content_json)}
       </p>
 
       {/* Dimensions */}
