@@ -47,6 +47,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   // Single-mode editing with live preview
   const [fieldValues, setFieldValues] = useState<string[]>([]);
+  const [readinessScale, setReadinessScale] = useState<Record<string, string>>({});
   const [allIdeas, setAllIdeas] = useState<Record<string, Idea>>({});
   const [contentJson, setContentJson] = useState<any>(null);
 
@@ -143,7 +144,13 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         fields = fieldDimension.values;
         setFieldValues(fields);
       }
-      
+
+      // Extract readiness scale (range -> label) for the dropdown
+      const readinessDimension = dimensionsData.dimensions_registry.core_dimensions.readiness;
+      if (readinessDimension?.scale) {
+        setReadinessScale(readinessDimension.scale);
+      }
+
       setAllIdeas(ideas);
 
       if (ideaId && !isCreatingNew) {
@@ -151,7 +158,7 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
         const idea = ideas[ideaId];
         if (idea) {
           setTitle(idea.title);
-          setContent(idea.content);
+          setContent(idea.content ?? '');
           setDimensions(idea.dimensions);
           const maybeJson: any = (idea as any).content_json;
           if (maybeJson) {
@@ -610,20 +617,27 @@ export const IdeaModal: React.FC<IdeaModalProps> = ({
                 {/* Readiness Level */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Readiness Level: {dimensions.readiness}
+                    Readiness Level
                   </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={dimensions.readiness}
-                    onChange={(e) => handleDimensionChange('readiness', parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Research</span>
-                    <span>Ready to Deploy</span>
-                  </div>
+                  <select
+                    value={
+                      Object.keys(readinessScale).find((range) => {
+                        const [min, max] = range.split('-').map(Number);
+                        return dimensions.readiness >= min && dimensions.readiness <= max;
+                      }) || ''
+                    }
+                    onChange={(e) => {
+                      const [min] = e.target.value.split('-').map(Number);
+                      if (!isNaN(min)) handleDimensionChange('readiness', min);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {Object.entries(readinessScale).map(([range, label]) => (
+                      <option key={range} value={range}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Complexity Level */}
